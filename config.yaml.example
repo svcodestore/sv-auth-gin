@@ -35,4 +35,6 @@ jwt:
   buffer-time: 86400
   expires-time: 604800
   issuer: 
-  signing-key: 
+  signing-key:
+oauth:
+  token-url: "http://192.168.123.83:8888/api/login/oauth2.0/token?"
