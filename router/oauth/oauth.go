@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/svcodestore/sv-auth-gin/api/app"
 
 	"github.com/svcodestore/sv-auth-gin/api"
 	"github.com/svcodestore/sv-auth-gin/api/oauth"
@@ -15,4 +16,6 @@ func (*OAuthRoutes) Init(r *gin.RouterGroup) {
 
 	oauthG := r.Group("oauth2.0")
 	oauthG.POST("/token", oauth.GetAccessToken)
+
+	r.GET("/application/current-application", app.GetCurrentApp)
 }
