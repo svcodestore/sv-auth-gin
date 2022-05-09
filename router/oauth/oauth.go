@@ -17,5 +17,6 @@ func (*OAuthRoutes) Init(r *gin.RouterGroup) {
 	oauthG := r.Group("oauth2.0")
 	oauthG.POST("/token", oauth.GetAccessToken)
 
-	r.GET("/application/current-application", app.GetCurrentApp)
+	appG := r.Group("application")
+	appG.GET("/current-application", app.GetCurrentApp)
 }

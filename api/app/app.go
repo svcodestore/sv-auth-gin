@@ -16,6 +16,7 @@ func GetCurrentApp(c *gin.Context) {
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
+		data["clientSecret"] = "***"
 		response.OkWithData(data, c)
 	}
 }

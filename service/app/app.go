@@ -8,17 +8,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/structpb"
 	"log"
-	"time"
 )
 
 type AppService struct {
 }
 
-func (s AppService) AppWithId(id string) (app gin.H, err error) {
-	app, err = utils.CallSsoRpcService(func(conn *grpc.ClientConn) (reply *structpb.Struct, e error) {
+func (s *AppService) AppWithId(id string) (app gin.H, err error) {
+	app, err = utils.CallSsoRpcService(func(conn *grpc.ClientConn, ctx context.Context) (reply *structpb.Struct, e error) {
 		c := pb.NewApplicationClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
 
 		r, e := c.GetApplicationById(ctx, &pb.GetApplicationByIdRequest{
 			Id: id,
