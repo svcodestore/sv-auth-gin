@@ -2,15 +2,22 @@ package utils
 
 import (
 	"fmt"
-	"github.com/svcodestore/sv-auth-gin/global"
+	"log"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/structpb"
-	"log"
+
+	"github.com/svcodestore/sv-auth-gin/global"
 )
 
-func CallSsoRpcService(cb func(conn *grpc.ClientConn)(reply *structpb.Struct, e error)) (data map[string]interface{}, err error) {
-	addr := fmt.Sprintf(":%d", global.CONFIG.System.SsoRpcAddr)
+func CallSsoRpcService(cb func(conn *grpc.ClientConn) (reply *structpb.Struct, e error)) (data map[string]interface{}, err error) {
+	port := global.CONFIG.System.SsoRpcAddr
+	if port == 0 {
+		panic("sso server port is 0")
+	}
+	addr := fmt.Sprintf(":%d", port)
+
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	defer conn.Close()
 	if err != nil {

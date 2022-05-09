@@ -11,8 +11,7 @@ var appService = service.ServiceGroup.AppService
 
 func GetCurrentApp(c *gin.Context) {
 	id := global.CONFIG.System.Id
-	response.Ok(c)
-	return
+
 	data, err := appService.AppWithId(id)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
