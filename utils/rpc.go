@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -14,11 +13,10 @@ import (
 )
 
 func CallSsoRpcService(cb func(conn *grpc.ClientConn, ctx context.Context) (reply *structpb.Struct, e error)) (data map[string]interface{}, err error) {
-	port := global.CONFIG.System.SsoRpcAddr
-	if port == 0 {
-		panic("sso server port is 0")
+	addr := global.CONFIG.System.SsoRpcAddr
+	if addr == "" {
+		panic("sso server address is empty")
 	}
-	addr := fmt.Sprintf(":%d", port)
 
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	defer conn.Close()

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/svcodestore/sv-auth-gin/global"
@@ -30,7 +29,7 @@ func RunServer() {
 
 	routers := initialize.Routers()
 
-	address := fmt.Sprintf(":%d", global.CONFIG.System.Addr)
+	address := global.CONFIG.System.Addr
 	s := initServer(address, routers)
 
 	global.LOGGER.Error(s.ListenAndServe().Error())
