@@ -21,7 +21,8 @@ func (s *AppService) AppWithId(id string) (app gin.H, err error) {
 			Id: id,
 		})
 		if e != nil {
-			log.Fatalf("could not get user: %v", err)
+			log.Fatalf("could not get user: %v", e)
+			return
 		}
 		reply = r.GetApplication()
 		return

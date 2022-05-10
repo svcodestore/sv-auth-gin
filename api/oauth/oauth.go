@@ -1,15 +1,14 @@
 package oauth
 
 import (
-	"encoding/json"
-	"net/url"
-
 	"github.com/gin-gonic/gin"
+	"github.com/svcodestore/sv-auth-gin/service"
 
 	"github.com/svcodestore/sv-auth-gin/global"
 	"github.com/svcodestore/sv-auth-gin/model/common/response"
-	"github.com/svcodestore/sv-auth-gin/utils"
 )
+
+var oauthService = service.ServiceGroup.OauthService
 
 type Token struct {
 	AccessToken  string      `json:"accessToken"`
@@ -36,26 +35,9 @@ func GetAccessToken(c *gin.Context) {
 			return
 		}
 
-		var uri url.URL
-		q := uri.Query()
-
-		q.Add("grant_type", grantType)
-		q.Add("client_id", clientId)
-		q.Add("client_secret", clientSecret)
-		q.Add("redirect_uri", redirectUri)
-		q.Add("code", code)
-
-		body, err := utils.Post(global.CONFIG.Oauth.TokenUrl+q.Encode(), url.Values{})
-
-		if err != nil {
-			response.UnAuthWithMessage("empty code", c)
-			return
+		resp, err := oauthService.GetAccessToken(grantType, clientId, clientSecret, code, redirectUri)
+		if err == nil {
+			response.OkWithData(resp, c)
 		}
-
-		var res Result
-
-		json.Unmarshal(body, &res)
-
-		response.OkWithData(res, c)
 	}
 }

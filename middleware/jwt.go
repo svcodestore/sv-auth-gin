@@ -7,7 +7,6 @@ import (
 
 	"github.com/svcodestore/sv-auth-gin/model/common/response"
 	"github.com/svcodestore/sv-auth-gin/service"
-	"github.com/svcodestore/sv-auth-gin/utils"
 )
 
 var oauthService = service.ServiceGroup.OauthService
@@ -36,23 +35,11 @@ func JWTCheck() gin.HandlerFunc {
 			}
 			token = t[1]
 		}
-		j := utils.NewJWT()
-		claims, err := j.ParseToken(token)
-		if err != nil {
-			if err == utils.TokenExpired {
-				response.UnAuthWithMessage(err.Error(), c)
-				c.Abort()
-				return
-			}
-			response.UnAuth(c)
-			c.Abort()
-			return
-		}
 
-		isLogin := oauthService.IsUserLogin(claims.UserId)
+		isLogin, claims, err := oauthService.IsUserLogin(token)
 
-		if !isLogin {
-			response.UnAuth(c)
+		if !isLogin || err != nil {
+			response.UnAuthWithMessage(err.Error(), c)
 			c.Abort()
 			return
 		}
