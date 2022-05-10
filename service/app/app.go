@@ -13,6 +13,22 @@ import (
 type AppService struct {
 }
 
+func (s *AppService) AppClientSecretWithClientId(clientId string) (clientSecret string, err error) {
+	clientSecret, err = utils.CallSsoRpcServiceStringReply(func(conn *grpc.ClientConn, ctx context.Context) (reply string, e error) {
+		c := pb.NewApplicationClient(conn)
+
+		r, e := c.GetApplicationSecretByClientId(ctx, &pb.GetApplicationSecretByClientIdRequest{
+			ClientId: clientId,
+		})
+		if e != nil {
+			return
+		}
+		reply = r.GetClientSecret()
+		return
+	})
+	return
+}
+
 func (s *AppService) AppWithId(id string) (app gin.H, err error) {
 	app, err = utils.CallSsoRpcService(func(conn *grpc.ClientConn, ctx context.Context) (reply *structpb.Struct, e error) {
 		c := pb.NewApplicationClient(conn)

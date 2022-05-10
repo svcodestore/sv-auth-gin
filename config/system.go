@@ -2,7 +2,6 @@ package config
 
 type System struct {
 	Id            string `mapstructure:"id" json:"id" yaml:"id"`
-	Secret        string `mapstructure:"secret" json:"secret" yaml:"secret"`
 	Env           string `mapstructure:"env" json:"env" yaml:"env"`    // 环境值
 	Addr          string `mapstructure:"addr" json:"addr" yaml:"addr"` // 端口值
 	SsoRpcAddr    string `mapstructure:"sso-rpc-addr" json:"ssoRpcAddr" yaml:"sso-rpc-addr"`

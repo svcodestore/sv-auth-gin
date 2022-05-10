@@ -19,5 +19,4 @@ type Config struct {
 	Zap    Zap    `mapstructure:"logger" json:"zap" yaml:"logger"`
 	Redis  Redis  `mapstructure:"redis" json:"redis" yaml:"redis"`
 	System System `mapstructure:"system" json:"system" yaml:"system"`
-	Oauth  Oauth  `mapstructure:"oauth" json:"oauth" yaml:"oauth"`
 }
