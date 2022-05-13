@@ -11,21 +11,23 @@ type server interface {
 	ListenAndServe() error
 }
 
-func RunServer() {
+func commonInit() {
 	global.CONFIGURATOR = initialize.InitConfigurator()
 	global.LOGGER = initialize.Zap()
 	global.DB = initialize.Gorm()
 	initialize.DBList()
-	if global.DB != nil {
-
-		db, err := global.DB.DB()
-		if err != nil {
-			log.Panicln(err)
-		}
-		defer db.Close()
-	}
 
 	initialize.Redis()
+}
+
+func RunServer() {
+	commonInit()
+
+	db, err := global.DB.DB()
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer db.Close()
 
 	routers := initialize.Routers()
 
