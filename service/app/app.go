@@ -45,3 +45,18 @@ func (s *AppService) AppWithId(id string) (app gin.H, err error) {
 	})
 	return
 }
+
+func (s *AppService) Apps() (app gin.H, err error) {
+	app, err = utils.CallSsoRpcService(func(conn *grpc.ClientConn, ctx context.Context) (reply *structpb.Struct, e error) {
+		c := pb.NewApplicationClient(conn)
+
+		r, e := c.GetAvailableApplications(ctx, &pb.GetAvailableApplicationsRequest{})
+		if e != nil {
+			log.Fatalf("could not get user: %v", e)
+			return
+		}
+		reply = r.GetApplications()
+		return
+	})
+	return
+}

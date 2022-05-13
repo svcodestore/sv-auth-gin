@@ -28,3 +28,20 @@ func (s *UserService) UserWithId(id string) (user gin.H, err error) {
 	})
 	return
 }
+
+func (s *UserService) UsersWithApplicationId(applicationId string) (users gin.H, err error) {
+	users, err = utils.CallSsoRpcService(func(conn *grpc.ClientConn, ctx context.Context) (reply *structpb.Struct, e error) {
+		c := pb.NewUserClient(conn)
+
+		r, e := c.GetAvailableUsersByApplicationId(ctx, &pb.GetAvailableUsersByApplicationIdRequest{
+			ApplicationId: applicationId,
+		})
+		if e != nil {
+			err = e
+			return
+		}
+		reply = r.GetUsers()
+		return
+	})
+	return
+}

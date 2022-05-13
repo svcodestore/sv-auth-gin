@@ -20,3 +20,12 @@ func GetCurrentApp(c *gin.Context) {
 		response.OkWithData(data, c)
 	}
 }
+
+func GetApps(c *gin.Context) {
+	apps, err := appService.Apps()
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(apps, c)
+	}
+}
