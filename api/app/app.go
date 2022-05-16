@@ -26,6 +26,6 @@ func GetApps(c *gin.Context) {
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
-		response.OkWithData(apps, c)
+		response.OkWithData(apps["data"], c)
 	}
 }

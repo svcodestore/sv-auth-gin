@@ -1,51 +1,49 @@
 package menu
 
 import (
+	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/svcodestore/sv-auth-gin/global"
 	"github.com/svcodestore/sv-auth-gin/model"
 	"github.com/svcodestore/sv-auth-gin/utils"
 )
 
+var (
+	json = jsoniter.ConfigCompatibleWithStandardLibrary
+)
+
 type MenuService struct {
 }
 
-func (s *MenuService) CreateMenu(m model.Menus) (menu model.Menus, err error) {
+func (s *MenuService) CreateMenu(m *model.Menus) (err error) {
 	m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
 	err = model.MenusMgr(utils.Gorm()).Create(m).Error
-	if err != nil {
-		return
-	}
-	menu, err = s.MenuWithId(m.ID)
+
 	return
 }
 
-func (s *MenuService) DeleteMenuWithId(id string) (isDeleted bool) {
-	db := global.DB.Where("id = ?", id).Delete(model.Menus{})
-	isDeleted = db.RowsAffected == 1
+func (s *MenuService) DeleteMenuWithIds(ids ...string) (err error) {
+	db := global.DB.Where("id IN (?)", ids).Delete(model.Menus{})
+	err = db.Error
 	return
 }
 
-func (s *MenuService) UpdateMenuWithId(m *model.Menus) (menu model.Menus, err error) {
+func (s *MenuService) UpdateMenuWithId(m *model.Menus) (err error) {
 	id := m.ID
 	m.ID = ""
 	db := model.MenusMgr(utils.Gorm()).Where("id = ?", id).Updates(m)
-	if db.RowsAffected == 1 {
-		return s.MenuWithId(id)
-	}
+	m.ID = id
 	err = db.Error
 
 	return
 }
 
-func (s *MenuService) UpdateMenuStatusWithId(status bool, id, updatedBy string) (menu model.Menus, err error) {
+func (s *MenuService) UpdateMenuStatusWithId(status bool, id, updatedBy string) (err error) {
 	err = model.MenusMgr(utils.Gorm()).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
 	}).Error
-	if err != nil {
-		return
-	}
-	menu, err = s.MenuWithId(id)
+
 	return
 }
 
@@ -65,5 +63,39 @@ func (s *MenuService) MenuWithId(id string) (menu model.Menus, err error) {
 
 func (s *MenuService) AvailableMenus() (menus []*model.Menus, err error) {
 	menus, err = s.AllMenu(true)
+	return
+}
+
+func (s *MenuService) CrudBatchMenu(currentUserId string, data *utils.CrudRequestData) (err error) {
+	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
+		var m model.Menus
+		err  = json.Unmarshal(b, &m)
+		if err != nil {
+			return
+		}
+		fmt.Println(m)
+		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
+		m.CreatedBy = currentUserId
+		m.UpdatedBy = currentUserId
+
+		err = s.CreateMenu(&m)
+
+		return
+	}, func(b []byte) (err error) {
+		var m model.Menus
+		err  = json.Unmarshal(b, &m)
+		if err != nil {
+			return
+		}
+		m.UpdatedBy = currentUserId
+
+		err = s.UpdateMenuWithId(&m)
+
+		return
+	}, func(ids []string) (err error) {
+		err = s.DeleteMenuWithIds(ids...)
+		return
+	})
+
 	return
 }

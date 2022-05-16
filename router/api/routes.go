@@ -20,6 +20,7 @@ func (*Routes) Init(r *gin.RouterGroup) {
 
 	menusG := r.Group("menus")
 	menusG.GET("", menu.GetAllMenu)
+	menusG.POST("/batch", menu.BatchCrudMenu)
 	menuG := r.Group("menu")
 	menuG.POST("", menu.CreateMenu)
 	menuG.DELETE("/:id", menu.DeleteMenuById)

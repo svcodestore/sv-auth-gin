@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/svcodestore/sv-auth-gin/model"
 	"github.com/svcodestore/sv-auth-gin/model/common/response"
+	"github.com/svcodestore/sv-auth-gin/model/system/request"
+	"github.com/svcodestore/sv-auth-gin/utils"
 	"strconv"
 )
 
@@ -26,7 +28,7 @@ func CreateMenu(c *gin.Context) {
 	component := c.PostForm("component")
 	icon := c.PostForm("icon")
 
-	menu, err := menuService.CreateMenu(model.Menus{
+	err := menuService.CreateMenu(&model.Menus{
 		ID:            "",
 		Pid:           pid,
 		ApplicationID: applicationId,
@@ -44,14 +46,14 @@ func CreateMenu(c *gin.Context) {
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
-		response.OkWithData(menu, c)
+		response.Ok(c)
 	}
 }
 
 func DeleteMenuById(c *gin.Context) {
 	id := c.Param("id")
-	isDeleted := menuService.DeleteMenuWithId(id)
-	if isDeleted {
+	err := menuService.DeleteMenuWithIds(id)
+	if err == nil {
 		response.Ok(c)
 	} else {
 		response.Fail(c)
@@ -81,7 +83,7 @@ func UpdateMenuById(c *gin.Context) {
 	status := c.PostForm("status")
 
 	updatingMenu := &model.Menus{
-		ID: id,
+		ID:        id,
 		UpdatedBy: uid,
 	}
 
@@ -105,7 +107,6 @@ func UpdateMenuById(c *gin.Context) {
 		isOnlyUpdateStatus = false
 		updatingMenu.Code = code
 	}
-
 
 	if name != "" {
 		isOnlyUpdateStatus = false
@@ -140,14 +141,14 @@ func UpdateMenuById(c *gin.Context) {
 	var menu model.Menus
 	var err error
 	if !isOnlyUpdateStatus {
-		menu, err = menuService.UpdateMenuWithId(updatingMenu)
+		err = menuService.UpdateMenuWithId(updatingMenu)
 	}
 	if err == nil {
 		if status == "1" || status == "0" {
 			if status == "1" {
-				menu, err = menuService.UpdateMenuStatusWithId(true, id, currentUserId)
+				err = menuService.UpdateMenuStatusWithId(true, id, currentUserId)
 			} else {
-				menu, err = menuService.UpdateMenuStatusWithId(false, id, currentUserId)
+				err = menuService.UpdateMenuStatusWithId(false, id, currentUserId)
 			}
 		}
 		if err == nil {
@@ -177,4 +178,20 @@ func GetMenuById(c *gin.Context) {
 	} else {
 		response.OkWithData(menu, c)
 	}
+}
+
+func BatchCrudMenu(c *gin.Context) {
+	claims, _ := c.Get("claims")
+	id := claims.(*request.CustomClaims).UserId
+
+	var m utils.CrudRequestData
+	e := c.ShouldBindJSON(&m)
+	if e == nil {
+		e = menuService.CrudBatchMenu(id, &m)
+		if e == nil {
+			response.Ok(c)
+			return
+		}
+	}
+	response.FailWithMessage(e.Error(), c)
 }

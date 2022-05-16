@@ -1,6 +1,8 @@
 package utils
 
-import "bytes"
+import (
+	"bytes"
+)
 
 func Pad(str string, length int, repStr string) string {
 	l := len(str)
@@ -28,4 +30,34 @@ func Reverse(s string) string {
 		a[i], a[j] = a[j], a[i]
 	}
 	return string(a)
+}
+
+func SplitByPairSymbol(str, symbolL, symbolR string) (inner []string) {
+	a := []rune(str)
+	l := len(a)
+	sL := []rune(symbolL)[0]
+	sR := []rune(symbolR)[0]
+	n := 0
+	var s []rune
+
+	for i := 0; i < l; i++ {
+		if n == 0 {
+			n++
+		}
+		if a[i] == sL {
+			n++
+		}
+		if a[i] == sR {
+			if n > 1 {
+				inner = append(inner, string(s))
+				s = s[0:0]
+			}
+			n = 1
+		}
+		if n > 1 && a[i] != sL {
+			s = append(s, a[i])
+		}
+	}
+
+	return
 }
