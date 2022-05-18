@@ -67,6 +67,11 @@ func (obj *_ActionMenuMgr) Gets() (results []*ActionMenu, err error) {
 
 //////////////////////////option case ////////////////////////////////////////////
 
+// WithID id获取
+func (obj *_ActionMenuMgr) WithID(id string) Option {
+	return optionFunc(func(o *options) { o.query["id"] = id })
+}
+
 // WithActionID action_id获取
 func (obj *_ActionMenuMgr) WithActionID(actionID string) Option {
 	return optionFunc(func(o *options) { o.query["action_id"] = actionID })
@@ -156,6 +161,45 @@ func (obj *_ActionMenuMgr) GetByOptions(opts ...Option) (results []*ActionMenu, 
 }
 
 //////////////////////////enume case ////////////////////////////////////////////
+
+// GetFromID 通过id获取内容
+func (obj *_ActionMenuMgr) GetFromID(id string) (result ActionMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` = ?", id).Find(&result).Error
+	if err == nil && obj.isRelated {
+		if err = obj.New().Table("actions").Where("id = ?", result.ActionID).Find(&result.Actions).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+		if err = obj.New().Table("menus").Where("id = ?", result.MenuID).Find(&result.Menus).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+	}
+
+	return
+}
+
+// GetBatchFromID 批量查找
+func (obj *_ActionMenuMgr) GetBatchFromID(ids []string) (results []*ActionMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` IN (?)", ids).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("actions").Where("id = ?", results[i].ActionID).Find(&results[i].Actions).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+			if err = obj.New().Table("menus").Where("id = ?", results[i].MenuID).Find(&results[i].Menus).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
 
 // GetFromActionID 通过action_id获取内容
 func (obj *_ActionMenuMgr) GetFromActionID(actionID string) (results []*ActionMenu, err error) {
@@ -440,8 +484,8 @@ func (obj *_ActionMenuMgr) GetBatchFromUpdatedBy(updatedBys []string) (results [
 //////////////////////////primary index case ////////////////////////////////////////////
 
 // FetchByPrimaryKey primary or index 获取唯一内容
-func (obj *_ActionMenuMgr) FetchByPrimaryKey(actionID string, menuID string) (result ActionMenu, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`action_id` = ? AND `menu_id` = ?", actionID, menuID).Find(&result).Error
+func (obj *_ActionMenuMgr) FetchByPrimaryKey(id string) (result ActionMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` = ?", id).Find(&result).Error
 	if err == nil && obj.isRelated {
 		if err = obj.New().Table("actions").Where("id = ?", result.ActionID).Find(&result.Actions).Error; err != nil { //
 			if err != gorm.ErrRecordNotFound { // 非 没找到

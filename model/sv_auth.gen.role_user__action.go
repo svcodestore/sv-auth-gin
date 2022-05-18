@@ -67,6 +67,11 @@ func (obj *_RoleUserActionMgr) Gets() (results []*RoleUserAction, err error) {
 
 //////////////////////////option case ////////////////////////////////////////////
 
+// WithID id获取
+func (obj *_RoleUserActionMgr) WithID(id string) Option {
+	return optionFunc(func(o *options) { o.query["id"] = id })
+}
+
 // WithRoleUserID role_user_id获取
 func (obj *_RoleUserActionMgr) WithRoleUserID(roleUserID string) Option {
 	return optionFunc(func(o *options) { o.query["role_user_id"] = roleUserID })
@@ -156,6 +161,45 @@ func (obj *_RoleUserActionMgr) GetByOptions(opts ...Option) (results []*RoleUser
 }
 
 //////////////////////////enume case ////////////////////////////////////////////
+
+// GetFromID 通过id获取内容
+func (obj *_RoleUserActionMgr) GetFromID(id string) (result RoleUserAction, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` = ?", id).Find(&result).Error
+	if err == nil && obj.isRelated {
+		if err = obj.New().Table("role_user").Where("id = ?", result.RoleUserID).Find(&result.RoleUser).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+		if err = obj.New().Table("actions").Where("id = ?", result.ActionID).Find(&result.Actions).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+	}
+
+	return
+}
+
+// GetBatchFromID 批量查找
+func (obj *_RoleUserActionMgr) GetBatchFromID(ids []string) (results []*RoleUserAction, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` IN (?)", ids).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("role_user").Where("id = ?", results[i].RoleUserID).Find(&results[i].RoleUser).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+			if err = obj.New().Table("actions").Where("id = ?", results[i].ActionID).Find(&results[i].Actions).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
 
 // GetFromRoleUserID 通过role_user_id获取内容
 func (obj *_RoleUserActionMgr) GetFromRoleUserID(roleUserID string) (results []*RoleUserAction, err error) {
@@ -440,8 +484,8 @@ func (obj *_RoleUserActionMgr) GetBatchFromUpdatedBy(updatedBys []string) (resul
 //////////////////////////primary index case ////////////////////////////////////////////
 
 // FetchByPrimaryKey primary or index 获取唯一内容
-func (obj *_RoleUserActionMgr) FetchByPrimaryKey(roleUserID string, actionID string) (result RoleUserAction, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`role_user_id` = ? AND `action_id` = ?", roleUserID, actionID).Find(&result).Error
+func (obj *_RoleUserActionMgr) FetchByPrimaryKey(id string) (result RoleUserAction, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` = ?", id).Find(&result).Error
 	if err == nil && obj.isRelated {
 		if err = obj.New().Table("role_user").Where("id = ?", result.RoleUserID).Find(&result.RoleUser).Error; err != nil { //
 			if err != gorm.ErrRecordNotFound { // 非 没找到

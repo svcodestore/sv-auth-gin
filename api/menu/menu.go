@@ -4,14 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/svcodestore/sv-auth-gin/model"
 	"github.com/svcodestore/sv-auth-gin/model/common/response"
-	"github.com/svcodestore/sv-auth-gin/model/system/request"
 	"github.com/svcodestore/sv-auth-gin/utils"
 	"strconv"
 )
 
 func CreateMenu(c *gin.Context) {
-	currentUserId := c.PostForm("currentUserId")
-	uid := currentUserId
+	uid := utils.GetUserID(c)
 
 	pid := c.PostForm("pid")
 	applicationId := c.PostForm("applicationId")
@@ -61,8 +59,7 @@ func DeleteMenuById(c *gin.Context) {
 }
 
 func UpdateMenuById(c *gin.Context) {
-	currentUserId := c.PostForm("currentUserId")
-	uid := currentUserId
+	uid := utils.GetUserID(c)
 
 	id := c.PostForm("id")
 	pid := c.PostForm("pid")
@@ -146,9 +143,9 @@ func UpdateMenuById(c *gin.Context) {
 	if err == nil {
 		if status == "1" || status == "0" {
 			if status == "1" {
-				err = menuService.UpdateMenuStatusWithId(true, id, currentUserId)
+				err = menuService.UpdateMenuStatusWithId(true, id, uid)
 			} else {
-				err = menuService.UpdateMenuStatusWithId(false, id, currentUserId)
+				err = menuService.UpdateMenuStatusWithId(false, id, uid)
 			}
 		}
 		if err == nil {
@@ -162,11 +159,22 @@ func UpdateMenuById(c *gin.Context) {
 
 func GetAllMenu(c *gin.Context) {
 	isAvailable := c.Query("isAvailable")
-	menus, err := menuService.AllMenu(isAvailable == "1")
-	if err != nil {
+	appId := c.Query("applicationId")
+	if appId != "" {
+		menus, err := menuService.MenusWithAppId(appId)
+		if err == nil {
+			response.OkWithData(menus, c)
+			return
+		}
 		response.FailWithMessage(err.Error(), c)
+		return
 	} else {
-		response.OkWithData(menus, c)
+		menus, err := menuService.AllMenu(isAvailable == "1")
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.OkWithData(menus, c)
+		}
 	}
 }
 
@@ -181,8 +189,7 @@ func GetMenuById(c *gin.Context) {
 }
 
 func BatchCrudMenu(c *gin.Context) {
-	claims, _ := c.Get("claims")
-	id := claims.(*request.CustomClaims).UserId
+	id := utils.GetUserID(c)
 
 	var m utils.CrudRequestData
 	e := c.ShouldBindJSON(&m)

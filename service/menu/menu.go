@@ -1,15 +1,9 @@
 package menu
 
 import (
-	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/svcodestore/sv-auth-gin/global"
 	"github.com/svcodestore/sv-auth-gin/model"
 	"github.com/svcodestore/sv-auth-gin/utils"
-)
-
-var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
 type MenuService struct {
@@ -73,7 +67,7 @@ func (s *MenuService) CrudBatchMenu(currentUserId string, data *utils.CrudReques
 		if err != nil {
 			return
 		}
-		fmt.Println(m)
+
 		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
 		m.CreatedBy = currentUserId
 		m.UpdatedBy = currentUserId
@@ -96,6 +90,13 @@ func (s *MenuService) CrudBatchMenu(currentUserId string, data *utils.CrudReques
 		err = s.DeleteMenuWithIds(ids...)
 		return
 	})
+
+	return
+}
+
+func (s *MenuService) MenusWithAppId(appId string) (menus []*model.Menus, err error) {
+	menuMgr := model.MenusMgr(global.DB.Order("pid, sort_no, id"))
+	menus, err = menuMgr.GetFromApplicationID(appId)
 
 	return
 }

@@ -3,15 +3,11 @@ package user
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/svcodestore/sv-auth-gin/model/common/response"
-	"github.com/svcodestore/sv-auth-gin/model/system/request"
-	"github.com/svcodestore/sv-auth-gin/service"
+	"github.com/svcodestore/sv-auth-gin/utils"
 )
 
-var userService = service.ServiceGroup.UserService
-
 func GetCurrentUser(c *gin.Context) {
-	claims, _ := c.Get("claims")
-	id := claims.(*request.CustomClaims).UserId
+	id := utils.GetUserID(c)
 	user, _ := userService.UserWithId(id)
 	response.OkWithData(user, c)
 }
@@ -23,8 +19,9 @@ func GetUsersByApplicationId(c *gin.Context) {
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
 		} else {
-			response.OkWithData(user, c)
+			response.OkWithData(user["data"], c)
 		}
+		return
 	}
 	response.Ok(c)
 }

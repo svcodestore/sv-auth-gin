@@ -80,6 +80,7 @@ create table menus
 
 create table action_menu
 (
+    id         bigint      not null,
     action_id  bigint      not null,
     menu_id    bigint      not null,
     status     tinyint(1)  not null default 1,
@@ -87,7 +88,7 @@ create table action_menu
     created_by bigint      not null,
     updated_at datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
     updated_by bigint      not null,
-    primary key (action_id, menu_id),
+    primary key (id),
     constraint action_menu_chk_status check ( status = 0 or status = 1),
     constraint action_menu_fk_action foreign key (action_id) references `actions` (id) on update cascade on delete cascade,
     constraint action_menu_fk_menu foreign key (menu_id) references `menus` (id) on update cascade on delete cascade,
@@ -99,6 +100,7 @@ create table action_menu
 
 create table role_menu
 (
+    id         bigint      not null,
     role_id    bigint      not null,
     menu_id    bigint      not null,
     status     tinyint(1)  not null default 1,
@@ -106,7 +108,7 @@ create table role_menu
     created_by bigint      not null,
     updated_at datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
     updated_by bigint      not null,
-    primary key (role_id, menu_id),
+    primary key (id),
     constraint role_menu_chk_status check ( status = 0 or status = 1),
     constraint role_menu_fk_role foreign key (role_id) references `roles` (id) on update cascade on delete cascade,
     constraint role_menu_fk_menu foreign key (menu_id) references `menus` (id) on update cascade on delete cascade,
@@ -139,14 +141,15 @@ create table role_user
 
 create table role_user__action
 (
+    id           bigint      not null,
     role_user_id bigint      not null,
-    action_id    bigint         not null,
+    action_id    bigint      not null,
     status       tinyint(1)  not null default 1,
     created_at   datetime(6) not null default current_timestamp(6),
     created_by   bigint      not null,
     updated_at   datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
     updated_by   bigint      not null,
-    primary key (role_user_id, action_id),
+    primary key (id),
     constraint role_user__action_chk_status check ( status = 0 or status = 1),
     constraint role_user__action_fk_role_user foreign key (role_user_id) references `role_user` (id) on update cascade on delete cascade,
     constraint role_user__action_fk_action foreign key (action_id) references `actions` (id) on update cascade on delete cascade,

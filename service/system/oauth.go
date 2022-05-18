@@ -56,7 +56,6 @@ func (s *OauthService) IsUserLogin(accessToken string) (isLogin bool, claims *re
 	if err != nil {
 		return
 	}
-
 	code := int(result["code"].(float64))
 	data := result["data"].(map[string]interface{})
 	message := result["message"].(string)
