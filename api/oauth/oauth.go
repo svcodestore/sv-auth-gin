@@ -45,6 +45,8 @@ func GetAccessToken(c *gin.Context) {
 		resp, err := oauthService.GetAccessToken(grantType, clientId, clientSecret, code, redirectUri)
 		if err == nil {
 			response.OkWithData(resp, c)
+			return
 		}
 	}
+	response.Fail(c)
 }
