@@ -32,7 +32,7 @@ func (s *ActionService) UpdateActionWithId(m *model.Actions) (err error) {
 	return
 }
 
-func (s *ActionService) UpdateActionStatusWithId(status bool, id, updatedBy string) (err error) {
+func (s *ActionService) UpdateActionStatusWithId(status uint8, id, updatedBy string) (err error) {
 	err = model.ActionsMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
@@ -44,7 +44,7 @@ func (s *ActionService) UpdateActionStatusWithId(status bool, id, updatedBy stri
 func (s *ActionService) AllAction(isAvailable bool) (Actions []*model.Actions, err error) {
 	db := global.DB
 	if isAvailable {
-		db = db.Where("status = ?", true)
+		db = db.Where("status = ?", 1)
 	}
 	Actions, err = model.ActionsMgr(db).Gets()
 

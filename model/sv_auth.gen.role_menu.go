@@ -72,6 +72,11 @@ func (obj *_RoleMenuMgr) WithID(id string) Option {
 	return optionFunc(func(o *options) { o.query["id"] = id })
 }
 
+// WithApplicationID application_id获取
+func (obj *_RoleMenuMgr) WithApplicationID(applicationID string) Option {
+	return optionFunc(func(o *options) { o.query["application_id"] = applicationID })
+}
+
 // WithRoleID role_id获取
 func (obj *_RoleMenuMgr) WithRoleID(roleID string) Option {
 	return optionFunc(func(o *options) { o.query["role_id"] = roleID })
@@ -83,7 +88,7 @@ func (obj *_RoleMenuMgr) WithMenuID(menuID string) Option {
 }
 
 // WithStatus status获取
-func (obj *_RoleMenuMgr) WithStatus(status bool) Option {
+func (obj *_RoleMenuMgr) WithStatus(status uint8) Option {
 	return optionFunc(func(o *options) { o.query["status"] = status })
 }
 
@@ -201,6 +206,46 @@ func (obj *_RoleMenuMgr) GetBatchFromID(ids []string) (results []*RoleMenu, err 
 	return
 }
 
+// GetFromApplicationID 通过application_id获取内容
+func (obj *_RoleMenuMgr) GetFromApplicationID(applicationID string) (results []*RoleMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ?", applicationID).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("roles").Where("id = ?", results[i].RoleID).Find(&results[i].Roles).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+			if err = obj.New().Table("menus").Where("id = ?", results[i].MenuID).Find(&results[i].Menus).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+// GetBatchFromApplicationID 批量查找
+func (obj *_RoleMenuMgr) GetBatchFromApplicationID(applicationIDs []string) (results []*RoleMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` IN (?)", applicationIDs).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("roles").Where("id = ?", results[i].RoleID).Find(&results[i].Roles).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+			if err = obj.New().Table("menus").Where("id = ?", results[i].MenuID).Find(&results[i].Menus).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
 // GetFromRoleID 通过role_id获取内容
 func (obj *_RoleMenuMgr) GetFromRoleID(roleID string) (results []*RoleMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`role_id` = ?", roleID).Find(&results).Error
@@ -282,7 +327,7 @@ func (obj *_RoleMenuMgr) GetBatchFromMenuID(menuIDs []string) (results []*RoleMe
 }
 
 // GetFromStatus 通过status获取内容
-func (obj *_RoleMenuMgr) GetFromStatus(status bool) (results []*RoleMenu, err error) {
+func (obj *_RoleMenuMgr) GetFromStatus(status uint8) (results []*RoleMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` = ?", status).Find(&results).Error
 	if err == nil && obj.isRelated {
 		for i := 0; i < len(results); i++ {
@@ -302,7 +347,7 @@ func (obj *_RoleMenuMgr) GetFromStatus(status bool) (results []*RoleMenu, err er
 }
 
 // GetBatchFromStatus 批量查找
-func (obj *_RoleMenuMgr) GetBatchFromStatus(statuss []bool) (results []*RoleMenu, err error) {
+func (obj *_RoleMenuMgr) GetBatchFromStatus(statuss []uint8) (results []*RoleMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` IN (?)", statuss).Find(&results).Error
 	if err == nil && obj.isRelated {
 		for i := 0; i < len(results); i++ {
@@ -486,6 +531,25 @@ func (obj *_RoleMenuMgr) GetBatchFromUpdatedBy(updatedBys []string) (results []*
 // FetchByPrimaryKey primary or index 获取唯一内容
 func (obj *_RoleMenuMgr) FetchByPrimaryKey(id string) (result RoleMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` = ?", id).Find(&result).Error
+	if err == nil && obj.isRelated {
+		if err = obj.New().Table("roles").Where("id = ?", result.RoleID).Find(&result.Roles).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+		if err = obj.New().Table("menus").Where("id = ?", result.MenuID).Find(&result.Menus).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+	}
+
+	return
+}
+
+// FetchUniqueIndexByRoleMenuUniqueIndex primary or index 获取唯一内容
+func (obj *_RoleMenuMgr) FetchUniqueIndexByRoleMenuUniqueIndex(applicationID string, roleID string, menuID string) (result RoleMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `role_id` = ? AND `menu_id` = ?", applicationID, roleID, menuID).Find(&result).Error
 	if err == nil && obj.isRelated {
 		if err = obj.New().Table("roles").Where("id = ?", result.RoleID).Find(&result.Roles).Error; err != nil { //
 			if err != gorm.ErrRecordNotFound { // 非 没找到

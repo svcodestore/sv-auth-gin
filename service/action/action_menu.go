@@ -31,7 +31,7 @@ func (s *ActionMenuService) UpdateActionMenuWithId(m *model.ActionMenu) (err err
 	return
 }
 
-func (s *ActionMenuService) UpdateActionMenuStatusWithId(status bool, id, updatedBy string) (err error) {
+func (s *ActionMenuService) UpdateActionMenuStatusWithId(status uint8, id, updatedBy string) (err error) {
 	err = model.ActionMenuMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
@@ -40,24 +40,30 @@ func (s *ActionMenuService) UpdateActionMenuStatusWithId(status bool, id, update
 	return
 }
 
-func (s *ActionMenuService) AllActionMenu(isAvailable bool) (roleMenus []*model.ActionMenu, err error) {
+func (s *ActionMenuService) AllActionMenu(isAvailable bool) (actionMenus []*model.ActionMenu, err error) {
 	db := global.DB
 	if isAvailable {
-		db = db.Where("status = ?", true)
+		db = db.Where("status = ?", 1)
 	}
-	roleMenus, err = model.ActionMenuMgr(db).Gets()
+	actionMenus, err = model.ActionMenuMgr(db).Gets()
 
 	return
 }
 
-func (s *ActionMenuService) ActionMenuWithId(id string) (roleMenu model.ActionMenu, err error) {
-	roleMenu, err = model.ActionMenuMgr(global.DB).GetFromID(id)
+func (s *ActionMenuService) ActionMenuWithId(id string) (actionMenu model.ActionMenu, err error) {
+	actionMenu, err = model.ActionMenuMgr(global.DB).GetFromID(id)
 
 	return
 }
 
-func (s *ActionMenuService) AvailableActionMenu() (roles []*model.ActionMenu, err error) {
-	roles, err = s.AllActionMenu(true)
+func (s *ActionMenuService) ActionMenusWithAppId(appId string) (actionMenus []*model.ActionMenu, err error) {
+	actionMenus, err = model.ActionMenuMgr(global.DB.Order("id")).GetFromApplicationID(appId)
+
+	return
+}
+
+func (s *ActionMenuService) AvailableActionMenu() (actionMenus []*model.ActionMenu, err error) {
+	actionMenus, err = s.AllActionMenu(true)
 
 	return
 }

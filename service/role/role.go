@@ -32,7 +32,7 @@ func (s *RoleService) UpdateRoleWithId(m *model.Roles) (err error) {
 	return
 }
 
-func (s *RoleService) UpdateRoleStatusWithId(status bool, id, updatedBy string) (err error) {
+func (s *RoleService) UpdateRoleStatusWithId(status uint8, id, updatedBy string) (err error) {
 	err = model.RolesMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
@@ -44,7 +44,7 @@ func (s *RoleService) UpdateRoleStatusWithId(status bool, id, updatedBy string) 
 func (s *RoleService) AllRole(isAvailable bool) (roles []*model.Roles, err error) {
 	db := global.DB
 	if isAvailable {
-		db = db.Where("status = ?", true)
+		db = db.Where("status = ?", 1)
 	}
 	roles, err = model.RolesMgr(db).Gets()
 

@@ -72,6 +72,11 @@ func (obj *_ActionMenuMgr) WithID(id string) Option {
 	return optionFunc(func(o *options) { o.query["id"] = id })
 }
 
+// WithApplicationID application_id获取
+func (obj *_ActionMenuMgr) WithApplicationID(applicationID string) Option {
+	return optionFunc(func(o *options) { o.query["application_id"] = applicationID })
+}
+
 // WithActionID action_id获取
 func (obj *_ActionMenuMgr) WithActionID(actionID string) Option {
 	return optionFunc(func(o *options) { o.query["action_id"] = actionID })
@@ -83,7 +88,7 @@ func (obj *_ActionMenuMgr) WithMenuID(menuID string) Option {
 }
 
 // WithStatus status获取
-func (obj *_ActionMenuMgr) WithStatus(status bool) Option {
+func (obj *_ActionMenuMgr) WithStatus(status uint8) Option {
 	return optionFunc(func(o *options) { o.query["status"] = status })
 }
 
@@ -201,6 +206,46 @@ func (obj *_ActionMenuMgr) GetBatchFromID(ids []string) (results []*ActionMenu, 
 	return
 }
 
+// GetFromApplicationID 通过application_id获取内容
+func (obj *_ActionMenuMgr) GetFromApplicationID(applicationID string) (results []*ActionMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ?", applicationID).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("actions").Where("id = ?", results[i].ActionID).Find(&results[i].Actions).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+			if err = obj.New().Table("menus").Where("id = ?", results[i].MenuID).Find(&results[i].Menus).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+// GetBatchFromApplicationID 批量查找
+func (obj *_ActionMenuMgr) GetBatchFromApplicationID(applicationIDs []string) (results []*ActionMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` IN (?)", applicationIDs).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("actions").Where("id = ?", results[i].ActionID).Find(&results[i].Actions).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+			if err = obj.New().Table("menus").Where("id = ?", results[i].MenuID).Find(&results[i].Menus).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
 // GetFromActionID 通过action_id获取内容
 func (obj *_ActionMenuMgr) GetFromActionID(actionID string) (results []*ActionMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`action_id` = ?", actionID).Find(&results).Error
@@ -282,7 +327,7 @@ func (obj *_ActionMenuMgr) GetBatchFromMenuID(menuIDs []string) (results []*Acti
 }
 
 // GetFromStatus 通过status获取内容
-func (obj *_ActionMenuMgr) GetFromStatus(status bool) (results []*ActionMenu, err error) {
+func (obj *_ActionMenuMgr) GetFromStatus(status uint8) (results []*ActionMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` = ?", status).Find(&results).Error
 	if err == nil && obj.isRelated {
 		for i := 0; i < len(results); i++ {
@@ -302,7 +347,7 @@ func (obj *_ActionMenuMgr) GetFromStatus(status bool) (results []*ActionMenu, er
 }
 
 // GetBatchFromStatus 批量查找
-func (obj *_ActionMenuMgr) GetBatchFromStatus(statuss []bool) (results []*ActionMenu, err error) {
+func (obj *_ActionMenuMgr) GetBatchFromStatus(statuss []uint8) (results []*ActionMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` IN (?)", statuss).Find(&results).Error
 	if err == nil && obj.isRelated {
 		for i := 0; i < len(results); i++ {
@@ -486,6 +531,25 @@ func (obj *_ActionMenuMgr) GetBatchFromUpdatedBy(updatedBys []string) (results [
 // FetchByPrimaryKey primary or index 获取唯一内容
 func (obj *_ActionMenuMgr) FetchByPrimaryKey(id string) (result ActionMenu, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`id` = ?", id).Find(&result).Error
+	if err == nil && obj.isRelated {
+		if err = obj.New().Table("actions").Where("id = ?", result.ActionID).Find(&result.Actions).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+		if err = obj.New().Table("menus").Where("id = ?", result.MenuID).Find(&result.Menus).Error; err != nil { //
+			if err != gorm.ErrRecordNotFound { // 非 没找到
+				return
+			}
+		}
+	}
+
+	return
+}
+
+// FetchUniqueIndexByActionMenuUniqueIndex primary or index 获取唯一内容
+func (obj *_ActionMenuMgr) FetchUniqueIndexByActionMenuUniqueIndex(applicationID string, actionID string, menuID string) (result ActionMenu, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `action_id` = ? AND `menu_id` = ?", applicationID, actionID, menuID).Find(&result).Error
 	if err == nil && obj.isRelated {
 		if err = obj.New().Table("actions").Where("id = ?", result.ActionID).Find(&result.Actions).Error; err != nil { //
 			if err != gorm.ErrRecordNotFound { // 非 没找到

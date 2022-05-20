@@ -62,6 +62,11 @@ func (obj *_RoleUserMgr) WithID(id string) Option {
 	return optionFunc(func(o *options) { o.query["id"] = id })
 }
 
+// WithApplicationID application_id获取
+func (obj *_RoleUserMgr) WithApplicationID(applicationID string) Option {
+	return optionFunc(func(o *options) { o.query["application_id"] = applicationID })
+}
+
 // WithRoleID role_id获取
 func (obj *_RoleUserMgr) WithRoleID(roleID string) Option {
 	return optionFunc(func(o *options) { o.query["role_id"] = roleID })
@@ -73,7 +78,7 @@ func (obj *_RoleUserMgr) WithUserID(userID string) Option {
 }
 
 // WithStatus status获取
-func (obj *_RoleUserMgr) WithStatus(status bool) Option {
+func (obj *_RoleUserMgr) WithStatus(status uint8) Option {
 	return optionFunc(func(o *options) { o.query["status"] = status })
 }
 
@@ -171,6 +176,36 @@ func (obj *_RoleUserMgr) GetBatchFromID(ids []string) (results []*RoleUser, err 
 	return
 }
 
+// GetFromApplicationID 通过application_id获取内容
+func (obj *_RoleUserMgr) GetFromApplicationID(applicationID string) (results []*RoleUser, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ?", applicationID).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("roles").Where("id = ?", results[i].RoleID).Find(&results[i].Roles).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+// GetBatchFromApplicationID 批量查找
+func (obj *_RoleUserMgr) GetBatchFromApplicationID(applicationIDs []string) (results []*RoleUser, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` IN (?)", applicationIDs).Find(&results).Error
+	if err == nil && obj.isRelated {
+		for i := 0; i < len(results); i++ {
+			if err = obj.New().Table("roles").Where("id = ?", results[i].RoleID).Find(&results[i].Roles).Error; err != nil { //
+				if err != gorm.ErrRecordNotFound { // 非 没找到
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
 // GetFromRoleID 通过role_id获取内容
 func (obj *_RoleUserMgr) GetFromRoleID(roleID string) (results []*RoleUser, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`role_id` = ?", roleID).Find(&results).Error
@@ -232,7 +267,7 @@ func (obj *_RoleUserMgr) GetBatchFromUserID(userIDs []string) (results []*RoleUs
 }
 
 // GetFromStatus 通过status获取内容
-func (obj *_RoleUserMgr) GetFromStatus(status bool) (results []*RoleUser, err error) {
+func (obj *_RoleUserMgr) GetFromStatus(status uint8) (results []*RoleUser, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` = ?", status).Find(&results).Error
 	if err == nil && obj.isRelated {
 		for i := 0; i < len(results); i++ {
@@ -247,7 +282,7 @@ func (obj *_RoleUserMgr) GetFromStatus(status bool) (results []*RoleUser, err er
 }
 
 // GetBatchFromStatus 批量查找
-func (obj *_RoleUserMgr) GetBatchFromStatus(statuss []bool) (results []*RoleUser, err error) {
+func (obj *_RoleUserMgr) GetBatchFromStatus(statuss []uint8) (results []*RoleUser, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` IN (?)", statuss).Find(&results).Error
 	if err == nil && obj.isRelated {
 		for i := 0; i < len(results); i++ {
@@ -398,8 +433,8 @@ func (obj *_RoleUserMgr) FetchByPrimaryKey(id string) (result RoleUser, err erro
 }
 
 // FetchUniqueIndexByRoleUserUniqueIndex primary or index 获取唯一内容
-func (obj *_RoleUserMgr) FetchUniqueIndexByRoleUserUniqueIndex(roleID string, userID string) (result RoleUser, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`role_id` = ? AND `user_id` = ?", roleID, userID).Find(&result).Error
+func (obj *_RoleUserMgr) FetchUniqueIndexByRoleUserUniqueIndex(applicationID string, roleID string, userID string) (result RoleUser, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `role_id` = ? AND `user_id` = ?", applicationID, roleID, userID).Find(&result).Error
 	if err == nil && obj.isRelated {
 		if err = obj.New().Table("roles").Where("id = ?", result.RoleID).Find(&result.Roles).Error; err != nil { //
 			if err != gorm.ErrRecordNotFound { // 非 没找到

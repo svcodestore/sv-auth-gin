@@ -44,7 +44,7 @@ func (s *MenuService) UpdateMenuStatusWithId(status bool, id, updatedBy string) 
 func (s *MenuService) AllMenu(isAvailable bool) (menus []*model.Menus, err error) {
 	db := utils.Gorm()
 	if isAvailable {
-		db = db.Where("status = ?", true)
+		db = db.Where("status = ?", 1)
 	}
 	menus, err = model.MenusMgr(db).Gets()
 	return

@@ -52,11 +52,22 @@ func UpdateRoleUserActionById(c *gin.Context) {
 
 func GetAllRoleUserAction(c *gin.Context) {
 	isAvailable := c.Query("isAvailable")
-	roleUserActions, err := roleUserActionService.AllRoleUserAction(isAvailable == "1")
-	if err != nil {
+	appId := c.Query("applicationId")
+	if appId != "" {
+		roleUserActions, err := roleUserActionService.RoleUserActionsWithAppId(appId)
+		if err == nil {
+			response.OkWithData(roleUserActions, c)
+			return
+		}
 		response.FailWithMessage(err.Error(), c)
+		return
 	} else {
-		response.OkWithData(roleUserActions, c)
+		roleUserActions, err := roleUserActionService.AllRoleUserAction(isAvailable == "1")
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.OkWithData(roleUserActions, c)
+		}
 	}
 }
 

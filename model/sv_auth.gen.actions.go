@@ -63,7 +63,7 @@ func (obj *_ActionsMgr) WithName(name string) Option {
 }
 
 // WithStatus status获取
-func (obj *_ActionsMgr) WithStatus(status bool) Option {
+func (obj *_ActionsMgr) WithStatus(status uint8) Option {
 	return optionFunc(func(o *options) { o.query["status"] = status })
 }
 
@@ -174,14 +174,14 @@ func (obj *_ActionsMgr) GetBatchFromName(names []string) (results []*Actions, er
 }
 
 // GetFromStatus 通过status获取内容
-func (obj *_ActionsMgr) GetFromStatus(status bool) (results []*Actions, err error) {
+func (obj *_ActionsMgr) GetFromStatus(status uint8) (results []*Actions, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` = ?", status).Find(&results).Error
 
 	return
 }
 
 // GetBatchFromStatus 批量查找
-func (obj *_ActionsMgr) GetBatchFromStatus(statuss []bool) (results []*Actions, err error) {
+func (obj *_ActionsMgr) GetBatchFromStatus(statuss []uint8) (results []*Actions, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` IN (?)", statuss).Find(&results).Error
 
 	return
@@ -252,23 +252,9 @@ func (obj *_ActionsMgr) FetchByPrimaryKey(id string) (result Actions, err error)
 	return
 }
 
-// FetchUniqueIndexByActionsUnique1Index primary or index 获取唯一内容
-func (obj *_ActionsMgr) FetchUniqueIndexByActionsUnique1Index(applicationID string, code string, name string) (result Actions, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `code` = ? AND `name` = ?", applicationID, code, name).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByActionsUnique2Index primary or index 获取唯一内容
-func (obj *_ActionsMgr) FetchUniqueIndexByActionsUnique2Index(applicationID string, code string) (result Actions, err error) {
+// FetchUniqueIndexByActionsUniqueIndex primary or index 获取唯一内容
+func (obj *_ActionsMgr) FetchUniqueIndexByActionsUniqueIndex(applicationID string, code string) (result Actions, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `code` = ?", applicationID, code).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByActionsUnique3Index primary or index 获取唯一内容
-func (obj *_ActionsMgr) FetchUniqueIndexByActionsUnique3Index(applicationID string, name string) (result Actions, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `name` = ?", applicationID, name).Find(&result).Error
 
 	return
 }

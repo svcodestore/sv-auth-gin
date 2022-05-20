@@ -68,12 +68,12 @@ func (obj *_RolesMgr) WithName(name string) Option {
 }
 
 // WithIsGroup is_group获取
-func (obj *_RolesMgr) WithIsGroup(isGroup bool) Option {
+func (obj *_RolesMgr) WithIsGroup(isGroup uint8) Option {
 	return optionFunc(func(o *options) { o.query["is_group"] = isGroup })
 }
 
 // WithStatus status获取
-func (obj *_RolesMgr) WithStatus(status bool) Option {
+func (obj *_RolesMgr) WithStatus(status uint8) Option {
 	return optionFunc(func(o *options) { o.query["status"] = status })
 }
 
@@ -198,28 +198,28 @@ func (obj *_RolesMgr) GetBatchFromName(names []string) (results []*Roles, err er
 }
 
 // GetFromIsGroup 通过is_group获取内容
-func (obj *_RolesMgr) GetFromIsGroup(isGroup bool) (results []*Roles, err error) {
+func (obj *_RolesMgr) GetFromIsGroup(isGroup uint8) (results []*Roles, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`is_group` = ?", isGroup).Find(&results).Error
 
 	return
 }
 
 // GetBatchFromIsGroup 批量查找
-func (obj *_RolesMgr) GetBatchFromIsGroup(isGroups []bool) (results []*Roles, err error) {
+func (obj *_RolesMgr) GetBatchFromIsGroup(isGroups []uint8) (results []*Roles, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`is_group` IN (?)", isGroups).Find(&results).Error
 
 	return
 }
 
 // GetFromStatus 通过status获取内容
-func (obj *_RolesMgr) GetFromStatus(status bool) (results []*Roles, err error) {
+func (obj *_RolesMgr) GetFromStatus(status uint8) (results []*Roles, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` = ?", status).Find(&results).Error
 
 	return
 }
 
 // GetBatchFromStatus 批量查找
-func (obj *_RolesMgr) GetBatchFromStatus(statuss []bool) (results []*Roles, err error) {
+func (obj *_RolesMgr) GetBatchFromStatus(statuss []uint8) (results []*Roles, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` IN (?)", statuss).Find(&results).Error
 
 	return
@@ -290,23 +290,9 @@ func (obj *_RolesMgr) FetchByPrimaryKey(id string) (result Roles, err error) {
 	return
 }
 
-// FetchUniqueIndexByRolesUnique1Index primary or index 获取唯一内容
-func (obj *_RolesMgr) FetchUniqueIndexByRolesUnique1Index(applicationID string, code string, name string) (result Roles, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `code` = ? AND `name` = ?", applicationID, code, name).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByRolesUnique2Index primary or index 获取唯一内容
-func (obj *_RolesMgr) FetchUniqueIndexByRolesUnique2Index(applicationID string, code string) (result Roles, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `code` = ?", applicationID, code).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByRolesUnique3Index primary or index 获取唯一内容
-func (obj *_RolesMgr) FetchUniqueIndexByRolesUnique3Index(applicationID string, name string) (result Roles, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `name` = ?", applicationID, name).Find(&result).Error
+// FetchUniqueIndexByRolesUniqueIndex primary or index 获取唯一内容
+func (obj *_RolesMgr) FetchUniqueIndexByRolesUniqueIndex(pid string, applicationID string, code string) (result Roles, err error) {
+	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`pid` = ? AND `application_id` = ? AND `code` = ?", pid, applicationID, code).Find(&result).Error
 
 	return
 }

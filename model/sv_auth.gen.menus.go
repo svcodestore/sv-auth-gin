@@ -93,12 +93,12 @@ func (obj *_MenusMgr) WithIcon(icon string) Option {
 }
 
 // WithHide hide获取
-func (obj *_MenusMgr) WithHide(hide bool) Option {
+func (obj *_MenusMgr) WithHide(hide uint8) Option {
 	return optionFunc(func(o *options) { o.query["hide"] = hide })
 }
 
 // WithStatus status获取
-func (obj *_MenusMgr) WithStatus(status bool) Option {
+func (obj *_MenusMgr) WithStatus(status uint8) Option {
 	return optionFunc(func(o *options) { o.query["status"] = status })
 }
 
@@ -293,28 +293,28 @@ func (obj *_MenusMgr) GetBatchFromIcon(icons []string) (results []*Menus, err er
 }
 
 // GetFromHide 通过hide获取内容
-func (obj *_MenusMgr) GetFromHide(hide bool) (results []*Menus, err error) {
+func (obj *_MenusMgr) GetFromHide(hide uint8) (results []*Menus, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`hide` = ?", hide).Find(&results).Error
 
 	return
 }
 
 // GetBatchFromHide 批量查找
-func (obj *_MenusMgr) GetBatchFromHide(hides []bool) (results []*Menus, err error) {
+func (obj *_MenusMgr) GetBatchFromHide(hides []uint8) (results []*Menus, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`hide` IN (?)", hides).Find(&results).Error
 
 	return
 }
 
 // GetFromStatus 通过status获取内容
-func (obj *_MenusMgr) GetFromStatus(status bool) (results []*Menus, err error) {
+func (obj *_MenusMgr) GetFromStatus(status uint8) (results []*Menus, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` = ?", status).Find(&results).Error
 
 	return
 }
 
 // GetBatchFromStatus 批量查找
-func (obj *_MenusMgr) GetBatchFromStatus(statuss []bool) (results []*Menus, err error) {
+func (obj *_MenusMgr) GetBatchFromStatus(statuss []uint8) (results []*Menus, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`status` IN (?)", statuss).Find(&results).Error
 
 	return
@@ -385,37 +385,9 @@ func (obj *_MenusMgr) FetchByPrimaryKey(id string) (result Menus, err error) {
 	return
 }
 
-// FetchUniqueIndexByMenusUnique4Index primary or index 获取唯一内容
-func (obj *_MenusMgr) FetchUniqueIndexByMenusUnique4Index(pid string, applicationID string, path string) (result Menus, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`pid` = ? AND `application_id` = ? AND `path` = ?", pid, applicationID, path).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByMenusUnique5Index primary or index 获取唯一内容
-func (obj *_MenusMgr) FetchUniqueIndexByMenusUnique5Index(pid string, applicationID string, code string) (result Menus, err error) {
+// FetchUniqueIndexByMenusUniqueIndex primary or index 获取唯一内容
+func (obj *_MenusMgr) FetchUniqueIndexByMenusUniqueIndex(pid string, applicationID string, code string) (result Menus, err error) {
 	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`pid` = ? AND `application_id` = ? AND `code` = ?", pid, applicationID, code).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByMenusUnique1Index primary or index 获取唯一内容
-func (obj *_MenusMgr) FetchUniqueIndexByMenusUnique1Index(applicationID string, code string, name string) (result Menus, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `code` = ? AND `name` = ?", applicationID, code, name).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByMenusUnique2Index primary or index 获取唯一内容
-func (obj *_MenusMgr) FetchUniqueIndexByMenusUnique2Index(applicationID string, code string) (result Menus, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `code` = ?", applicationID, code).Find(&result).Error
-
-	return
-}
-
-// FetchUniqueIndexByMenusUnique3Index primary or index 获取唯一内容
-func (obj *_MenusMgr) FetchUniqueIndexByMenusUnique3Index(applicationID string, name string) (result Menus, err error) {
-	err = obj.DB.WithContext(obj.ctx).Table(obj.GetTableName()).Where("`application_id` = ? AND `name` = ?", applicationID, name).Find(&result).Error
 
 	return
 }

@@ -31,7 +31,7 @@ func (s *RoleMenuService) UpdateRoleMenuWithId(m *model.RoleMenu) (err error) {
 	return
 }
 
-func (s *RoleMenuService) UpdateRoleMenuStatusWithId(status bool, id, updatedBy string) (err error) {
+func (s *RoleMenuService) UpdateRoleMenuStatusWithId(status uint8, id, updatedBy string) (err error) {
 	err = model.RoleMenuMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
@@ -43,7 +43,7 @@ func (s *RoleMenuService) UpdateRoleMenuStatusWithId(status bool, id, updatedBy 
 func (s *RoleMenuService) AllRoleMenu(isAvailable bool) (roleMenus []*model.RoleMenu, err error) {
 	db := global.DB
 	if isAvailable {
-		db = db.Where("status = ?", true)
+		db = db.Where("status = ?", 1)
 	}
 	roleMenus, err = model.RoleMenuMgr(db).Gets()
 
@@ -56,8 +56,14 @@ func (s *RoleMenuService) RoleMenuWithId(id string) (roleMenu model.RoleMenu, er
 	return
 }
 
-func (s *RoleMenuService) AvailableRoleMenu() (roles []*model.RoleMenu, err error) {
-	roles, err = s.AllRoleMenu(true)
+func (s *RoleMenuService) RoleMenusWithAppId(appId string) (roleMenus []*model.RoleMenu, err error) {
+	roleMenus, err = model.RoleMenuMgr(global.DB).GetFromApplicationID(appId)
+
+	return
+}
+
+func (s *RoleMenuService) AvailableRoleMenu() (roleMenus []*model.RoleMenu, err error) {
+	roleMenus, err = s.AllRoleMenu(true)
 
 	return
 }

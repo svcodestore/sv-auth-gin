@@ -52,11 +52,22 @@ func UpdateRoleMenuById(c *gin.Context) {
 
 func GetAllRoleMenu(c *gin.Context) {
 	isAvailable := c.Query("isAvailable")
-	roleMenus, err := roleMenuService.AllRoleMenu(isAvailable == "1")
-	if err != nil {
+	appId := c.Query("applicationId")
+	if appId != "" {
+		roleMenus, err := roleMenuService.RoleMenusWithAppId(appId)
+		if err == nil {
+			response.OkWithData(roleMenus, c)
+			return
+		}
 		response.FailWithMessage(err.Error(), c)
+		return
 	} else {
-		response.OkWithData(roleMenus, c)
+		roleMenus, err := roleMenuService.AllRoleMenu(isAvailable == "1")
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.OkWithData(roleMenus, c)
+		}
 	}
 }
 

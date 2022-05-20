@@ -52,11 +52,22 @@ func UpdateActionMenuById(c *gin.Context) {
 
 func GetAllActionMenu(c *gin.Context) {
 	isAvailable := c.Query("isAvailable")
-	actionMenus, err := actionMenuService.AllActionMenu(isAvailable == "1")
-	if err != nil {
+	appId := c.Query("applicationId")
+	if appId != "" {
+		actionMenus, err := actionMenuService.ActionMenusWithAppId(appId)
+		if err == nil {
+			response.OkWithData(actionMenus, c)
+			return
+		}
 		response.FailWithMessage(err.Error(), c)
+		return
 	} else {
-		response.OkWithData(actionMenus, c)
+		actionMenus, err := actionMenuService.AllActionMenu(isAvailable == "1")
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.OkWithData(actionMenus, c)
+		}
 	}
 }
 

@@ -31,7 +31,7 @@ func (s *RoleUserActionService) UpdateRoleUserActionWithId(m *model.RoleUserActi
 	return
 }
 
-func (s *RoleUserActionService) UpdateRoleUserActionStatusWithId(status bool, id, updatedBy string) (err error) {
+func (s *RoleUserActionService) UpdateRoleUserActionStatusWithId(status uint8, id, updatedBy string) (err error) {
 	err = model.RoleUserActionMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
@@ -40,24 +40,30 @@ func (s *RoleUserActionService) UpdateRoleUserActionStatusWithId(status bool, id
 	return
 }
 
-func (s *RoleUserActionService) AllRoleUserAction(isAvailable bool) (roleMenus []*model.RoleUserAction, err error) {
+func (s *RoleUserActionService) AllRoleUserAction(isAvailable bool) (userActions []*model.RoleUserAction, err error) {
 	db := global.DB
 	if isAvailable {
 		db = db.Where("status = ?", true)
 	}
-	roleMenus, err = model.RoleUserActionMgr(db).Gets()
+	userActions, err = model.RoleUserActionMgr(db).Gets()
 
 	return
 }
 
-func (s *RoleUserActionService) RoleUserActionWithId(id string) (roleMenu model.RoleUserAction, err error) {
-	roleMenu, err = model.RoleUserActionMgr(global.DB).GetFromID(id)
+func (s *RoleUserActionService) RoleUserActionWithId(id string) (userAction model.RoleUserAction, err error) {
+	userAction, err = model.RoleUserActionMgr(global.DB).GetFromID(id)
 
 	return
 }
 
-func (s *RoleUserActionService) AvailableRoleUserAction() (roles []*model.RoleUserAction, err error) {
-	roles, err = s.AllRoleUserAction(true)
+func (s *RoleUserActionService) RoleUserActionsWithAppId(appId string) (userActions []*model.RoleUserAction, err error) {
+	userActions, err = model.RoleUserActionMgr(global.DB).GetFromApplicationID(appId)
+
+	return
+}
+
+func (s *RoleUserActionService) AvailableRoleUserAction() (userActions []*model.RoleUserAction, err error) {
+	userActions, err = s.AllRoleUserAction(true)
 
 	return
 }

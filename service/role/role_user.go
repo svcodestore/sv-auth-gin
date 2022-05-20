@@ -32,7 +32,7 @@ func (s *RoleUserService) UpdateRoleUserWithId(m *model.RoleUser) (err error) {
 	return
 }
 
-func (s *RoleUserService) UpdateRoleUserStatusWithId(status bool, id, updatedBy string) (err error) {
+func (s *RoleUserService) UpdateRoleUserStatusWithId(status uint8, id, updatedBy string) (err error) {
 	err = model.RoleUserMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
@@ -41,18 +41,24 @@ func (s *RoleUserService) UpdateRoleUserStatusWithId(status bool, id, updatedBy 
 	return
 }
 
-func (s *RoleUserService) AllRoleUser(isAvailable bool) (roles []*model.RoleUser, err error) {
+func (s *RoleUserService) AllRoleUser(isAvailable bool) (roleUsers []*model.RoleUser, err error) {
 	db := global.DB
 	if isAvailable {
-		db = db.Where("status = ?", true)
+		db = db.Where("status = ?", 1)
 	}
-	roles, err = model.RoleUserMgr(db).Gets()
+	roleUsers, err = model.RoleUserMgr(db).Gets()
 
 	return
 }
 
-func (s *RoleUserService) RoleUserWithId(id string) (role model.RoleUser, err error) {
-	role, err = model.RoleUserMgr(global.DB).GetFromID(id)
+func (s *RoleUserService) RoleUserWithId(id string) (roleUser model.RoleUser, err error) {
+	roleUser, err = model.RoleUserMgr(global.DB).GetFromID(id)
+
+	return
+}
+
+func (s *RoleUserService) RoleUsersWithAppId(appId string) (roles []*model.RoleUser, err error) {
+	roles, err = model.RoleUserMgr(global.DB).GetFromApplicationID(appId)
 
 	return
 }
