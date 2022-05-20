@@ -9,8 +9,8 @@ create table roles
     application_id bigint       not null,
     code           varchar(64)  not null,
     name           varchar(255) not null,
-    is_group       tinyint(1)   not null default 0,
-    status         tinyint(1)   not null default 1,
+    is_group       tinyint   not null default 0,
+    status         tinyint   not null default 1,
     created_at     datetime(6)  not null default current_timestamp(6),
     created_by     bigint       not null,
     updated_at     datetime(6)  not null default current_timestamp(6) on update current_timestamp(6),
@@ -21,9 +21,7 @@ create table roles
     constraint roles_fk_application_id foreign key (application_id) references `sv_sso`.`applications` (id) on update cascade on delete restrict,
     constraint roles_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint roles_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
-    constraint unique roles_unique1_index (application_id, code, name),
-    constraint unique roles_unique2_index (application_id, code),
-    constraint unique roles_unique3_index (application_id, name)
+    constraint unique roles_unique_index (application_id, pid, code)
 ) engine = InnoDB;
 
 create table actions
@@ -32,7 +30,7 @@ create table actions
     application_id bigint       not null,
     code           varchar(64)  not null,
     name           varchar(255) not null,
-    status         tinyint(1)   not null default 1,
+    status         tinyint   not null default 1,
     created_at     datetime(6)  not null default current_timestamp(6),
     created_by     bigint       not null,
     updated_at     datetime(6)  not null default current_timestamp(6) on update current_timestamp(6),
@@ -42,9 +40,7 @@ create table actions
     constraint actions_fk_application_id foreign key (application_id) references `sv_sso`.`applications` (id) on update cascade on delete restrict,
     constraint actions_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint actions_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
-    constraint unique actions_unique1_index (application_id, code, name),
-    constraint unique actions_unique2_index (application_id, code),
-    constraint unique actions_unique3_index (application_id, name)
+    constraint unique actions_unique_index (application_id, code)
 ) engine = InnoDB;
 
 create table menus
@@ -59,8 +55,8 @@ create table menus
     redirect       varchar(255),
     component      varchar(255)      not null,
     icon           varchar(255),
-    hide           tinyint(1)        not null default 0,
-    status         tinyint(1)        not null default 1,
+    hide           tinyint        not null default 0,
+    status         tinyint        not null default 1,
     created_at     datetime(6)       not null default current_timestamp(6),
     created_by     bigint            not null,
     updated_at     datetime(6)       not null default current_timestamp(6) on update current_timestamp(6),
@@ -71,23 +67,20 @@ create table menus
     constraint menus_fk_application_id foreign key (application_id) references `sv_sso`.`applications` (id) on update cascade on delete restrict,
     constraint menus_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint menus_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
-    constraint unique menus_unique1_index (application_id, code, name),
-    constraint unique menus_unique2_index (application_id, code),
-    constraint unique menus_unique3_index (application_id, name),
-    constraint unique menus_unique4_index (application_id, pid, path),
-    constraint unique menus_unique5_index (application_id, pid, code)
+    constraint unique menus_unique_index (application_id, pid, code)
 ) engine = InnoDB;
 
 create table action_menu
 (
-    id         bigint      not null,
-    action_id  bigint      not null,
-    menu_id    bigint      not null,
-    status     tinyint(1)  not null default 1,
-    created_at datetime(6) not null default current_timestamp(6),
-    created_by bigint      not null,
-    updated_at datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
-    updated_by bigint      not null,
+    id             bigint      not null,
+    application_id bigint      not null,
+    action_id      bigint      not null,
+    menu_id        bigint      not null,
+    status         tinyint  not null default 1,
+    created_at     datetime(6) not null default current_timestamp(6),
+    created_by     bigint      not null,
+    updated_at     datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
+    updated_by     bigint      not null,
     primary key (id),
     constraint action_menu_chk_status check ( status = 0 or status = 1),
     constraint action_menu_fk_action foreign key (action_id) references `actions` (id) on update cascade on delete cascade,
@@ -95,19 +88,21 @@ create table action_menu
     constraint action_menu_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint action_menu_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     index action_menu_action_id_index (action_id),
-    index action_menu_menu_id_index (menu_id)
+    index action_menu_menu_id_index (menu_id),
+    constraint unique action_menu_unique_index(application_id, action_id, menu_id)
 ) engine = InnoDB;
 
 create table role_menu
 (
-    id         bigint      not null,
-    role_id    bigint      not null,
-    menu_id    bigint      not null,
-    status     tinyint(1)  not null default 1,
-    created_at datetime(6) not null default current_timestamp(6),
-    created_by bigint      not null,
-    updated_at datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
-    updated_by bigint      not null,
+    id             bigint      not null,
+    application_id bigint      not null,
+    role_id        bigint      not null,
+    menu_id        bigint      not null,
+    status         tinyint  not null default 1,
+    created_at     datetime(6) not null default current_timestamp(6),
+    created_by     bigint      not null,
+    updated_at     datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
+    updated_by     bigint      not null,
     primary key (id),
     constraint role_menu_chk_status check ( status = 0 or status = 1),
     constraint role_menu_fk_role foreign key (role_id) references `roles` (id) on update cascade on delete cascade,
@@ -115,40 +110,43 @@ create table role_menu
     constraint role_menu_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint role_menu_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     index role_menu_role_id_index (role_id),
-    index role_menu_menu_id_index (menu_id)
+    index role_menu_menu_id_index (menu_id),
+    constraint unique role_menu_unique_index(application_id, role_id, menu_id)
 ) engine = InnoDB;
 
 create table role_user
 (
-    id         bigint      not null,
-    role_id    bigint      not null,
-    user_id    bigint      not null,
-    status     tinyint(1)  not null default 1,
-    created_at datetime(6) not null default current_timestamp(6),
-    created_by bigint      not null,
-    updated_at datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
-    updated_by bigint      not null,
+    id             bigint      not null,
+    application_id bigint      not null,
+    role_id        bigint      not null,
+    user_id        bigint      not null,
+    status         tinyint  not null default 1,
+    created_at     datetime(6) not null default current_timestamp(6),
+    created_by     bigint      not null,
+    updated_at     datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
+    updated_by     bigint      not null,
     primary key (id),
     constraint role_user_chk_status check ( status = 0 or status = 1),
     constraint role_user_fk_role foreign key (role_id) references `roles` (id) on update cascade on delete cascade,
     constraint role_user_fk_user foreign key (user_id) references `sv_sso`.`users` (id) on update cascade on delete cascade,
     constraint role_user_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint role_user_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
-    constraint unique role_user_unique_index (role_id, user_id),
+    constraint unique role_user_unique_index (application_id, role_id, user_id),
     index role_user_role_id_index (role_id),
     index role_user_user_id_index (user_id)
 ) engine = InnoDB;
 
 create table role_user__action
 (
-    id           bigint      not null,
-    role_user_id bigint      not null,
-    action_id    bigint      not null,
-    status       tinyint(1)  not null default 1,
-    created_at   datetime(6) not null default current_timestamp(6),
-    created_by   bigint      not null,
-    updated_at   datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
-    updated_by   bigint      not null,
+    id             bigint      not null,
+    application_id bigint      not null,
+    role_user_id   bigint      not null,
+    action_id      bigint      not null,
+    status         tinyint  not null default 1,
+    created_at     datetime(6) not null default current_timestamp(6),
+    created_by     bigint      not null,
+    updated_at     datetime(6) not null default current_timestamp(6) on update current_timestamp(6),
+    updated_by     bigint      not null,
     primary key (id),
     constraint role_user__action_chk_status check ( status = 0 or status = 1),
     constraint role_user__action_fk_role_user foreign key (role_user_id) references `role_user` (id) on update cascade on delete cascade,
@@ -156,5 +154,6 @@ create table role_user__action
     constraint role_user__action_fk_created_by foreign key (created_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     constraint role_user__action_fk_updated_by foreign key (updated_by) references `sv_sso`.`users` (id) on update cascade on delete restrict,
     index role_user__action_role_user_id_index (role_user_id),
-    index role_user__action_action_id_index (action_id)
+    index role_user__action_action_id_index (action_id),
+    constraint unique role_user__action_unique_index (application_id, role_user_id, action_id)
 ) engine = InnoDB;
