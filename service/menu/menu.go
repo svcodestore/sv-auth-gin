@@ -55,6 +55,11 @@ func (s *MenuService) MenuWithId(id string) (menu model.Menus, err error) {
 	return
 }
 
+func (s *MenuService) MenusWithAppIdAndIds(applicationId string, ids ...string) (menus []*model.Menus, err error) {
+	err = model.MenusMgr(global.DB).Where("status = 1 and application_id = ? and id IN (?)", applicationId, ids).Find(&menus).Error
+	return
+}
+
 func (s *MenuService) AvailableMenus() (menus []*model.Menus, err error) {
 	menus, err = s.AllMenu(true)
 	return

@@ -62,6 +62,12 @@ func (s *RoleMenuService) RoleMenusWithAppId(appId string) (roleMenus []*model.R
 	return
 }
 
+func (s *RoleMenuService) RoleMenusWithAppIdAndRoleIds(appId string, roleIds ...string) (roleMenus []*model.RoleMenu, err error) {
+	err = model.RoleMenuMgr(global.DB).Where("role_id IN (?) and status = 1 and application_id = ?", roleIds, appId).Find(&roleMenus).Error
+
+	return
+}
+
 func (s *RoleMenuService) AvailableRoleMenu() (roleMenus []*model.RoleMenu, err error) {
 	roleMenus, err = s.AllRoleMenu(true)
 

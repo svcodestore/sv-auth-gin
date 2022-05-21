@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/svcodestore/sv-auth-gin/service/action"
 	"github.com/svcodestore/sv-auth-gin/service/app"
+	"github.com/svcodestore/sv-auth-gin/service/auth"
 	"github.com/svcodestore/sv-auth-gin/service/menu"
 	"github.com/svcodestore/sv-auth-gin/service/role"
 	"github.com/svcodestore/sv-auth-gin/service/system"
@@ -21,6 +22,7 @@ type Group struct {
 	RoleUserActionService user.RoleUserActionService
 	ActionService         action.ActionService
 	ActionMenuService     action.ActionMenuService
+	AuthService           auth.AuthService
 }
 
 var ServiceGroup = new(Group)

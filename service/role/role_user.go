@@ -63,6 +63,18 @@ func (s *RoleUserService) RoleUsersWithAppId(appId string) (roles []*model.RoleU
 	return
 }
 
+func (s *RoleUserService) RoleUsersWithAppIdAndUserIds(appId string, userIds ...string) (roles []*model.RoleUser, err error) {
+	err = model.RoleUserMgr(global.DB).Where("user_id IN (?) and status = 1 and application_id = ?", userIds, appId).Find(&roles).Error
+
+	return
+}
+
+func (s *RoleUserService) RoleUsersWithAppIdAndRoleIds(appId string, roleIds ...string) (roles []*model.RoleUser, err error) {
+	roles, err = model.RoleUserMgr(global.DB.Where("role_id IN (?) and status = 1", roleIds)).GetFromApplicationID(appId)
+
+	return
+}
+
 func (s *RoleUserService) AvailableRoleUser() (roles []*model.RoleUser, err error) {
 	roles, err = s.AllRoleUser(true)
 

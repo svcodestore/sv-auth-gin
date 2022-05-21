@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/svcodestore/sv-auth-gin/api/action"
 	"github.com/svcodestore/sv-auth-gin/api/app"
+	"github.com/svcodestore/sv-auth-gin/api/auth"
 	"github.com/svcodestore/sv-auth-gin/api/menu"
 	"github.com/svcodestore/sv-auth-gin/api/role"
 	"github.com/svcodestore/sv-auth-gin/api/user"
@@ -83,4 +84,7 @@ func (*Routes) Init(r *gin.RouterGroup) {
 	roleUserG.DELETE("/:id", role.DeleteRoleUserById)
 	roleUserG.GET("/:id", role.GetRoleUserById)
 	roleUserG.PATCH("/:id", role.UpdateRoleUserById)
+
+	authG := r.Group("authorization")
+	authG.GET("/user-menus", auth.GetAuthMenus)
 }
