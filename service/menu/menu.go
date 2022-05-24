@@ -50,6 +50,47 @@ func (s *MenuService) AllMenu(isAvailable bool) (menus []*model.Menus, err error
 	return
 }
 
+func (s *MenuService) AllParentMenusWithId(id string) (m []*model.Menus) {
+	if menu, e := model.MenusMgr(global.DB).GetFromID(id); e == nil {
+		m = append(m, &menu)
+		if menu.Pid == "0" {
+			return
+		}
+
+		m = append(m, s.AllParentMenusWithId(menu.Pid)...)
+	}
+
+	return
+}
+
+func (s *MenuService) AllSubMenusWithId(id string) (m []*model.Menus) {
+	menus := s.SubMenusWithId(id)
+	if len(menus) == 0 {
+		return
+	}
+	m = append(m, menus...)
+
+	for _, menu := range menus {
+		m = append(m, s.SubMenusWithId(menu.ID)...)
+	}
+
+	return
+}
+
+func (s *MenuService) ParentMenuWithId(id string) (m model.Menus) {
+	if menu, e := model.MenusMgr(global.DB).GetFromID(id); e == nil {
+		m, _ = s.MenuWithId(menu.Pid)
+	}
+
+	return
+}
+
+func (s *MenuService) SubMenusWithId(id string) (m []*model.Menus) {
+	m, _ = model.MenusMgr(global.DB).GetFromPid(id)
+
+	return
+}
+
 func (s *MenuService) MenuWithId(id string) (menu model.Menus, err error) {
 	menu, err = model.MenusMgr(utils.Gorm()).GetFromID(id)
 	return
@@ -68,7 +109,7 @@ func (s *MenuService) AvailableMenus() (menus []*model.Menus, err error) {
 func (s *MenuService) CrudBatchMenu(currentUserId string, data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.Menus
-		err  = json.Unmarshal(b, &m)
+		err = json.Unmarshal(b, &m)
 		if err != nil {
 			return
 		}
@@ -82,7 +123,7 @@ func (s *MenuService) CrudBatchMenu(currentUserId string, data *utils.CrudReques
 		return
 	}, func(b []byte) (err error) {
 		var m model.Menus
-		err  = json.Unmarshal(b, &m)
+		err = json.Unmarshal(b, &m)
 		if err != nil {
 			return
 		}
