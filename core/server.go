@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/svcodestore/sv-auth-gin/rpc"
 	"log"
 
 	"github.com/svcodestore/sv-auth-gin/global"
@@ -35,4 +36,16 @@ func RunServer() {
 	s := initServer(address, routers)
 
 	global.LOGGER.Error(s.ListenAndServe().Error())
+}
+
+func RunRpcServer() {
+	commonInit()
+
+	db, err := global.DB.DB()
+	if err != nil {
+		log.Panicln(err)
+	}
+	defer db.Close()
+
+	initialize.InitGrpc(rpc.RegisterServer)
 }

@@ -55,3 +55,20 @@ func CallSsoRpcServiceStringReply(cb func(conn *grpc.ClientConn, ctx context.Con
 
 	return
 }
+
+func ToRpcStruct(data interface{}) *structpb.Struct {
+	b, e := json.Marshal(data)
+	if e != nil {
+		return nil
+	}
+	var m map[string]interface{}
+	e = json.Unmarshal(b, &m)
+	if e != nil {
+		return nil
+	}
+	s, err := structpb.NewStruct(m)
+	if err != nil {
+		return nil
+	}
+	return s
+}

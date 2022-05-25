@@ -9,7 +9,7 @@ func GetAuthMenus(c *gin.Context) {
 	applicationId := c.Query("applicationId")
 	userId := c.Query("userId")
 	if applicationId != "" && userId != "" {
-		menus, err := authService.AuthMenusWithApplicationAndUserId(applicationId, userId)
+		menus, err := authService.AuthMenusWithApplicationIdAndUserId(applicationId, userId)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
 		} else {

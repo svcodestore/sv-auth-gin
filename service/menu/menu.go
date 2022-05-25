@@ -50,43 +50,52 @@ func (s *MenuService) AllMenu(isAvailable bool) (menus []*model.Menus, err error
 	return
 }
 
-func (s *MenuService) AllParentMenusWithId(id string) (m []*model.Menus) {
-	if menu, e := model.MenusMgr(global.DB).GetFromID(id); e == nil {
+func (s *MenuService) AllMenuWithApplicationId(isAvailable bool, applicationId string) (menus []*model.Menus, err error) {
+	db := utils.Gorm().Where("application_id = ?", applicationId)
+	if isAvailable {
+		db = db.Where("status = ?", 1)
+	}
+	menus, err = model.MenusMgr(db).Gets()
+	return
+}
+
+func (s *MenuService) AllParentMenusWithApplicationIdAndId(applicationId, id string) (m []*model.Menus) {
+	if menu, e := model.MenusMgr(global.DB.Where("application_id = ?", applicationId)).GetFromID(id); e == nil {
 		m = append(m, &menu)
 		if menu.Pid == "0" {
 			return
 		}
 
-		m = append(m, s.AllParentMenusWithId(menu.Pid)...)
+		m = append(m, s.AllParentMenusWithApplicationIdAndId(applicationId, menu.Pid)...)
 	}
 
 	return
 }
 
-func (s *MenuService) AllSubMenusWithId(id string) (m []*model.Menus) {
-	menus := s.SubMenusWithId(id)
+func (s *MenuService) AllSubMenusWithApplicationIdAndId(applicationId, id string) (m []*model.Menus) {
+	menus := s.SubMenusWithApplicationIdAndId(applicationId, id)
 	if len(menus) == 0 {
 		return
 	}
 	m = append(m, menus...)
 
 	for _, menu := range menus {
-		m = append(m, s.SubMenusWithId(menu.ID)...)
+		m = append(m, s.AllSubMenusWithApplicationIdAndId(applicationId, menu.ID)...)
 	}
 
 	return
 }
 
-func (s *MenuService) ParentMenuWithId(id string) (m model.Menus) {
-	if menu, e := model.MenusMgr(global.DB).GetFromID(id); e == nil {
+func (s *MenuService) ParentMenuWithApplicationIdAndId(applicationId, id string) (m model.Menus) {
+	if menu, e := model.MenusMgr(global.DB.Where("application_id = ?", applicationId)).GetFromID(id); e == nil {
 		m, _ = s.MenuWithId(menu.Pid)
 	}
 
 	return
 }
 
-func (s *MenuService) SubMenusWithId(id string) (m []*model.Menus) {
-	m, _ = model.MenusMgr(global.DB).GetFromPid(id)
+func (s *MenuService) SubMenusWithApplicationIdAndId(applicationId, id string) (m []*model.Menus) {
+	m, _ = model.MenusMgr(global.DB.Where("application_id = ?", applicationId)).GetFromPid(id)
 
 	return
 }

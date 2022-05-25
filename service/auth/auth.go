@@ -7,7 +7,7 @@ import (
 type AuthService struct {
 }
 
-func (s *AuthService) AuthMenusWithApplicationAndUserId(applicationId, userId string) (menus []*model.Menus, err error) {
+func (s *AuthService) AuthMenusWithApplicationIdAndUserId(applicationId, userId string) (menus []*model.Menus, err error) {
 	roleUsers, err := roleUserService.RoleUsersWithAppIdAndUserIds(applicationId, userId)
 	if err != nil {
 		return
@@ -39,21 +39,21 @@ func (s *AuthService) AuthMenusWithApplicationAndUserId(applicationId, userId st
 		subMenus    []*model.Menus
 	)
 	for _, menu := range menus {
-		if menu.Pid == "0" {
+		if menu.Pid == "0" && menu.Code == "ROOT" {
 			isHasAllMenu = true
 			break
 		} else {
-			parentMenus = menuService.AllParentMenusWithId(menu.Pid)
-			subMenus = menuService.AllSubMenusWithId(menu.ID)
+			parentMenus = menuService.AllParentMenusWithApplicationIdAndId(applicationId, menu.Pid)
+			subMenus = menuService.AllSubMenusWithApplicationIdAndId(applicationId, menu.ID)
 		}
 	}
 	if isHasAllMenu {
-		menus, err = menuService.AllMenu(true)
+		menus, err = menuService.AllMenuWithApplicationId(true, applicationId)
 	}
 
 	menus = append(menus, parentMenus...)
 	menus = append(menus, subMenus...)
-	var idMaps  = make(map[string]bool)
+	var idMaps = make(map[string]bool)
 	var m = make([]*model.Menus, len(idMaps))
 	for _, menu := range menus {
 		if !idMaps[menu.ID] {
