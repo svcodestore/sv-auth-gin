@@ -11,7 +11,7 @@ type MenuService struct {
 
 func (s *MenuService) CreateMenu(m *model.Menus) (err error) {
 	m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-	err = model.MenusMgr(utils.Gorm()).Create(m).Error
+	err = model.MenusMgr(global.DB).Create(m).Error
 
 	return
 }
@@ -25,7 +25,7 @@ func (s *MenuService) DeleteMenuWithIds(ids ...string) (err error) {
 func (s *MenuService) UpdateMenuWithId(m *model.Menus) (err error) {
 	id := m.ID
 	m.ID = ""
-	db := model.MenusMgr(utils.Gorm()).Where("id = ?", id).Updates(m)
+	db := model.MenusMgr(global.DB).Where("id = ?", id).Updates(m)
 	m.ID = id
 	err = db.Error
 
@@ -33,7 +33,7 @@ func (s *MenuService) UpdateMenuWithId(m *model.Menus) (err error) {
 }
 
 func (s *MenuService) UpdateMenuStatusWithId(status bool, id, updatedBy string) (err error) {
-	err = model.MenusMgr(utils.Gorm()).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
+	err = model.MenusMgr(global.DB).Where("id = ?", id).Select("status").Updates(map[string]interface{}{
 		"status":     status,
 		"updated_by": updatedBy,
 	}).Error
@@ -51,9 +51,9 @@ func (s *MenuService) AllMenu(isAvailable bool) (menus []*model.Menus, err error
 }
 
 func (s *MenuService) AllMenuWithApplicationId(isAvailable bool, applicationId string) (menus []*model.Menus, err error) {
-	db := utils.Gorm().Where("application_id = ?", applicationId)
+	db := global.DB.Where("application_id = ?", applicationId)
 	if isAvailable {
-		db = db.Where("status = ?", 1)
+		db = db.Where("status = 1")
 	}
 	menus, err = model.MenusMgr(db).Gets()
 	return
@@ -101,7 +101,7 @@ func (s *MenuService) SubMenusWithApplicationIdAndId(applicationId, id string) (
 }
 
 func (s *MenuService) MenuWithId(id string) (menu model.Menus, err error) {
-	menu, err = model.MenusMgr(utils.Gorm()).GetFromID(id)
+	menu, err = model.MenusMgr(global.DB).GetFromID(id)
 	return
 }
 
