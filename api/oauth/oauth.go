@@ -12,18 +12,6 @@ var (
 	appService   = service.ServiceGroup.AppService
 )
 
-type Token struct {
-	AccessToken  string      `json:"accessToken"`
-	RefreshToken string      `json:"refreshToken"`
-	User         interface{} `json:"user"`
-}
-
-type Result struct {
-	Code    int    `json:"code"`
-	Data    Token  `json:"data"`
-	Message string `json:"message"`
-}
-
 func GetAccessToken(c *gin.Context) {
 	grantType := c.PostForm("grant_type")
 

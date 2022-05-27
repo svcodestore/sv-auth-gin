@@ -20,7 +20,6 @@ func JWTCheck() gin.HandlerFunc {
 		}
 
 		token := c.Request.Header.Get("Authorization")
-
 		if token == "" {
 			response.UnAuth(c)
 			c.Abort()
@@ -36,10 +35,10 @@ func JWTCheck() gin.HandlerFunc {
 			token = t[1]
 		}
 
-		isLogin, claims, err := oauthService.IsUserLogin(token)
+		isLogin, claims, _ := oauthService.IsUserLogin(token)
 
-		if !isLogin || err != nil {
-			response.UnAuthWithMessage(err.Error(), c)
+		if !isLogin  {
+			response.UnAuth(c)
 			c.Abort()
 			return
 		}
