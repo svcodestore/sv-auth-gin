@@ -13,6 +13,7 @@ func CreateRoleMenu(c *gin.Context) {
 	var m model.RoleMenu
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
+		m.ID = utils.SnowflakeId(utils.RandomInt(1024)).String()
 		m.CreatedBy = uid
 		m.UpdatedBy = uid
 		e = roleMenuService.CreateRoleMenu(&m)
@@ -82,16 +83,16 @@ func GetRoleMenuById(c *gin.Context) {
 }
 
 func BatchCrudRoleMenu(c *gin.Context) {
-	id := utils.GetUserID(c)
-
 	var m utils.CrudRequestData
+
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
-		e = roleMenuService.CrudBatchRoleMenu(id, &m)
+		e = roleMenuService.CrudBatchRoleMenu(&m)
 		if e == nil {
 			response.Ok(c)
 			return
 		}
 	}
+
 	response.FailWithMessage(e.Error(), c)
 }

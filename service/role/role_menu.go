@@ -74,34 +74,28 @@ func (s *RoleMenuService) AvailableRoleMenu() (roleMenus []*model.RoleMenu, err 
 	return
 }
 
-func (s *RoleMenuService) CrudBatchRoleMenu(currentMenuId string, data *utils.CrudRequestData) (err error) {
+func (s *RoleMenuService) CrudBatchRoleMenu(data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.RoleMenu
+
 		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
+		if err == nil {
+			err = s.CreateRoleMenu(&m)
 		}
-
-		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-		m.CreatedBy = currentMenuId
-		m.UpdatedBy = currentMenuId
-
-		err = s.CreateRoleMenu(&m)
 
 		return
 	}, func(b []byte) (err error) {
 		var m model.RoleMenu
-		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
-		}
-		m.UpdatedBy = currentMenuId
 
-		err = s.UpdateRoleMenuWithId(&m)
+		err = json.Unmarshal(b, &m)
+		if err == nil {
+			err = s.UpdateRoleMenuWithId(&m)
+		}
 
 		return
 	}, func(ids []string) (err error) {
 		err = s.DeleteRoleMenuWithIds(ids...)
+
 		return
 	})
 

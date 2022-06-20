@@ -13,6 +13,7 @@ func CreateAction(c *gin.Context) {
 	var m model.Actions
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
+		m.ID = utils.SnowflakeId(utils.RandomInt(1024)).String()
 		m.CreatedBy = uid
 		m.UpdatedBy = uid
 		e = actionService.CreateAction(&m)
@@ -82,16 +83,16 @@ func GetActionById(c *gin.Context) {
 }
 
 func BatchCrudAction(c *gin.Context) {
-	id := utils.GetUserID(c)
-
 	var m utils.CrudRequestData
+
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
-		e = actionService.CrudBatchAction(id, &m)
+		e = actionService.CrudBatchAction(&m)
 		if e == nil {
 			response.Ok(c)
 			return
 		}
 	}
+
 	response.FailWithMessage(e.Error(), c)
 }

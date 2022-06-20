@@ -10,7 +10,6 @@ type ActionService struct {
 }
 
 func (s *ActionService) CreateAction(m *model.Actions) (err error) {
-	m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
 	err = model.ActionsMgr(global.DB).Create(m).Error
 
 	return
@@ -69,34 +68,28 @@ func (s *ActionService) ActionsWithAppId(appId string) (Actions []*model.Actions
 	return
 }
 
-func (s *ActionService) CrudBatchAction(currentUserId string, data *utils.CrudRequestData) (err error) {
+func (s *ActionService) CrudBatchAction(data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.Actions
+
 		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
+		if err == nil {
+			err = s.CreateAction(&m)
 		}
-
-		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-		m.CreatedBy = currentUserId
-		m.UpdatedBy = currentUserId
-
-		err = s.CreateAction(&m)
 
 		return
 	}, func(b []byte) (err error) {
 		var m model.Actions
-		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
-		}
-		m.UpdatedBy = currentUserId
 
-		err = s.UpdateActionWithId(&m)
+		err = json.Unmarshal(b, &m)
+		if err == nil {
+			err = s.UpdateActionWithId(&m)
+		}
 
 		return
 	}, func(ids []string) (err error) {
 		err = s.DeleteActionWithIds(ids...)
+
 		return
 	})
 

@@ -10,7 +10,6 @@ type MenuService struct {
 }
 
 func (s *MenuService) CreateMenu(m *model.Menus) (err error) {
-	m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
 	err = model.MenusMgr(global.DB).Create(m).Error
 
 	return
@@ -115,34 +114,28 @@ func (s *MenuService) AvailableMenus() (menus []*model.Menus, err error) {
 	return
 }
 
-func (s *MenuService) CrudBatchMenu(currentUserId string, data *utils.CrudRequestData) (err error) {
+func (s *MenuService) CrudBatchMenu(data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.Menus
+
 		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
+		if err == nil {
+			err = s.CreateMenu(&m)
 		}
-
-		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-		m.CreatedBy = currentUserId
-		m.UpdatedBy = currentUserId
-
-		err = s.CreateMenu(&m)
 
 		return
 	}, func(b []byte) (err error) {
 		var m model.Menus
-		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
-		}
-		m.UpdatedBy = currentUserId
 
-		err = s.UpdateMenuWithId(&m)
+		err = json.Unmarshal(b, &m)
+		if err == nil {
+			err = s.UpdateMenuWithId(&m)
+		}
 
 		return
 	}, func(ids []string) (err error) {
 		err = s.DeleteMenuWithIds(ids...)
+
 		return
 	})
 

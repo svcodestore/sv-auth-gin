@@ -1,13 +1,15 @@
 package utils
 
 import (
-	jsoniter "github.com/json-iterator/go"
-	"github.com/svcodestore/sv-auth-gin/global"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
+
+	"github.com/svcodestore/sv-auth-gin/global"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -15,7 +17,7 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 type CrudRequestData struct {
 	Creates []map[string]interface{} `json:"A"`
 	Updates []map[string]interface{} `json:"U"`
-	Deletes []string      `json:"D"`
+	Deletes []string                 `json:"D"`
 }
 
 func Post(host string, postVaules url.Values) (body []byte, err error) {
@@ -191,19 +193,11 @@ func ExecJsonCrudBatch(data *CrudRequestData, addCb func(b []byte) (err error), 
 	if adds != nil {
 		addLen := len(adds)
 		if addLen > 0 {
-			for i := 0; i < addLen; i++ {
-				b, e := json.Marshal(adds[i])
-				if e != nil {
-					err = e
-					tx.Rollback()
-					return
-				}
-				e = addCb(b)
-				if e != nil {
-					err = e
-					tx.Rollback()
-					return
-				}
+			tree := ListToTree(adds, "id", "pid", "children", true)
+			err = addTreeCb(tree, addCb)
+			if err != nil {
+				tx.Rollback()
+				return
 			}
 		}
 	}
@@ -240,6 +234,32 @@ func ExecJsonCrudBatch(data *CrudRequestData, addCb func(b []byte) (err error), 
 	}
 
 	err = tx.Commit().Error
+
+	return
+}
+
+func addTreeCb(tree []map[string]interface{}, addCb func(b []byte) (err error)) (err error) {
+	for _, m := range tree {
+		children := m["children"]
+		if children != nil {
+			delete(m, "children")
+		}
+
+		b, e := json.Marshal(m)
+		if e != nil {
+			err = e
+			return
+		}
+		err = addCb(b)
+
+		if err != nil {
+			return
+		}
+
+		if children != nil && len(children.([]map[string]interface{})) > 0 {
+			err = addTreeCb(children.([]map[string]interface{}), addCb)
+		}
+	}
 
 	return
 }

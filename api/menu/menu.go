@@ -27,7 +27,7 @@ func CreateMenu(c *gin.Context) {
 	icon := c.PostForm("icon")
 
 	err := menuService.CreateMenu(&model.Menus{
-		ID:            "",
+		ID:            utils.SnowflakeId(utils.RandomInt(1024)).String(),
 		Pid:           pid,
 		ApplicationID: applicationId,
 		Code:          code,
@@ -189,16 +189,16 @@ func GetMenuById(c *gin.Context) {
 }
 
 func BatchCrudMenu(c *gin.Context) {
-	id := utils.GetUserID(c)
-
 	var m utils.CrudRequestData
+
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
-		e = menuService.CrudBatchMenu(id, &m)
+		e = menuService.CrudBatchMenu(&m)
 		if e == nil {
 			response.Ok(c)
 			return
 		}
 	}
+
 	response.FailWithMessage(e.Error(), c)
 }

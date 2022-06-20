@@ -10,7 +10,6 @@ type RoleService struct {
 }
 
 func (s *RoleService) CreateRole(m *model.Roles) (err error) {
-	m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
 	err = model.RolesMgr(global.DB).Create(m).Error
 
 	return
@@ -69,34 +68,29 @@ func (s *RoleService) RolesWithAppId(appId string) (roles []*model.Roles, err er
 	return
 }
 
-func (s *RoleService) CrudBatchRole(currentUserId string, data *utils.CrudRequestData) (err error) {
+func (s *RoleService) CrudBatchRole(data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.Roles
+
 		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
+		if err == nil {
+			err = s.CreateRole(&m)
 		}
-
-		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-		m.CreatedBy = currentUserId
-		m.UpdatedBy = currentUserId
-
-		err = s.CreateRole(&m)
 
 		return
 	}, func(b []byte) (err error) {
 		var m model.Roles
-		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
-		}
-		m.UpdatedBy = currentUserId
 
-		err = s.UpdateRoleWithId(&m)
+		err = json.Unmarshal(b, &m)
+		if err == nil {
+			err = s.UpdateRoleWithId(&m)
+
+		}
 
 		return
 	}, func(ids []string) (err error) {
 		err = s.DeleteRoleWithIds(ids...)
+
 		return
 	})
 

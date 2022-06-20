@@ -68,34 +68,28 @@ func (s *RoleUserActionService) AvailableRoleUserAction() (userActions []*model.
 	return
 }
 
-func (s *RoleUserActionService) CrudBatchRoleUserAction(currentMenuId string, data *utils.CrudRequestData) (err error) {
+func (s *RoleUserActionService) CrudBatchRoleUserAction(data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.RoleUserAction
+
 		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
+		if err == nil {
+			err = s.CreateRoleUserAction(&m)
 		}
-
-		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-		m.CreatedBy = currentMenuId
-		m.UpdatedBy = currentMenuId
-
-		err = s.CreateRoleUserAction(&m)
 
 		return
 	}, func(b []byte) (err error) {
 		var m model.RoleUserAction
+
 		err = json.Unmarshal(b, &m)
 		if err != nil {
-			return
+			err = s.UpdateRoleUserActionWithId(&m)
 		}
-		m.UpdatedBy = currentMenuId
-
-		err = s.UpdateRoleUserActionWithId(&m)
 
 		return
 	}, func(ids []string) (err error) {
 		err = s.DeleteRoleUserActionWithIds(ids...)
+
 		return
 	})
 

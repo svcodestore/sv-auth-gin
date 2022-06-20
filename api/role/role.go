@@ -13,6 +13,7 @@ func CreateRole(c *gin.Context) {
 	var m model.Roles
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
+		m.ID = utils.SnowflakeId(utils.RandomInt(1024)).String()
 		m.CreatedBy = uid
 		m.UpdatedBy = uid
 		e = roleService.CreateRole(&m)
@@ -82,16 +83,16 @@ func GetRoleById(c *gin.Context) {
 }
 
 func BatchCrudRole(c *gin.Context) {
-	id := utils.GetUserID(c)
-
 	var m utils.CrudRequestData
+
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
-		e = roleService.CrudBatchRole(id, &m)
+		e = roleService.CrudBatchRole(&m)
 		if e == nil {
 			response.Ok(c)
 			return
 		}
 	}
+
 	response.FailWithMessage(e.Error(), c)
 }

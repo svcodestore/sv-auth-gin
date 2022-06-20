@@ -13,6 +13,7 @@ func CreateRoleUserAction(c *gin.Context) {
 	var m model.RoleUserAction
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
+		m.ID = utils.SnowflakeId(utils.RandomInt(1024)).String()
 		m.CreatedBy = uid
 		m.UpdatedBy = uid
 		e = roleUserActionService.CreateRoleUserAction(&m)
@@ -82,16 +83,16 @@ func GetRoleUserActionById(c *gin.Context) {
 }
 
 func BatchCrudRoleUserAction(c *gin.Context) {
-	id := utils.GetUserID(c)
-
 	var m utils.CrudRequestData
+
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
-		e = roleUserActionService.CrudBatchRoleUserAction(id, &m)
+		e = roleUserActionService.CrudBatchRoleUserAction(&m)
 		if e == nil {
 			response.Ok(c)
 			return
 		}
 	}
+
 	response.FailWithMessage(e.Error(), c)
 }

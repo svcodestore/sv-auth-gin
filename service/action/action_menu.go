@@ -68,30 +68,23 @@ func (s *ActionMenuService) AvailableActionMenu() (actionMenus []*model.ActionMe
 	return
 }
 
-func (s *ActionMenuService) CrudBatchActionMenu(currentMenuId string, data *utils.CrudRequestData) (err error) {
+func (s *ActionMenuService) CrudBatchActionMenu(data *utils.CrudRequestData) (err error) {
 	err = utils.ExecJsonCrudBatch(data, func(b []byte) (err error) {
 		var m model.ActionMenu
+
 		err = json.Unmarshal(b, &m)
-		if err != nil {
-			return
+		if err == nil {
+			err = s.CreateActionMenu(&m)
 		}
-
-		m.ID = utils.SnowflakeId(int64(utils.RandRange(1, 1024))).String()
-		m.CreatedBy = currentMenuId
-		m.UpdatedBy = currentMenuId
-
-		err = s.CreateActionMenu(&m)
 
 		return
 	}, func(b []byte) (err error) {
 		var m model.ActionMenu
+
 		err = json.Unmarshal(b, &m)
 		if err != nil {
-			return
+			err = s.UpdateActionMenuWithId(&m)
 		}
-		m.UpdatedBy = currentMenuId
-
-		err = s.UpdateActionMenuWithId(&m)
 
 		return
 	}, func(ids []string) (err error) {

@@ -13,6 +13,7 @@ func CreateActionMenu(c *gin.Context) {
 	var m model.ActionMenu
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
+		m.ID = utils.SnowflakeId(utils.RandomInt(1024)).String()
 		m.CreatedBy = uid
 		m.UpdatedBy = uid
 		e = actionMenuService.CreateActionMenu(&m)
@@ -82,16 +83,16 @@ func GetActionMenuById(c *gin.Context) {
 }
 
 func BatchCrudActionMenu(c *gin.Context) {
-	id := utils.GetUserID(c)
-
 	var m utils.CrudRequestData
+
 	e := c.ShouldBindJSON(&m)
 	if e == nil {
-		e = actionMenuService.CrudBatchActionMenu(id, &m)
+		e = actionMenuService.CrudBatchActionMenu(&m)
 		if e == nil {
 			response.Ok(c)
 			return
 		}
 	}
+
 	response.FailWithMessage(e.Error(), c)
 }
