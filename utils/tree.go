@@ -20,10 +20,13 @@ func ListToTree(list []map[string]interface{}, idKey, pidKey, childrenKey string
 	for _, m := range list {
 		id := (m[idKey]).(string)
 		ids = append(ids, id)
-
 		idMap[id] = m
-		pid := (m[pidKey]).(string)
-		pidMap[pid] = pid
+
+		if pid, ok := m[pidKey]; ok {
+			pidMap[pid.(string)] = pid.(string)
+		} else {
+			return list
+		}
 	}
 
 	for _, m := range list {
