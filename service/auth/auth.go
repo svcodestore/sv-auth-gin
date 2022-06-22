@@ -43,8 +43,8 @@ func (s *AuthService) AuthMenusWithApplicationIdAndUserId(applicationId, userId 
 			isHasAllMenu = true
 			break
 		} else {
-			parentMenus = menuService.AllParentMenusWithApplicationIdAndId(applicationId, menu.Pid)
-			subMenus = menuService.AllSubMenusWithApplicationIdAndId(applicationId, menu.ID)
+			parentMenus = append(parentMenus, menuService.AllParentMenusWithApplicationIdAndId(applicationId, menu.Pid)...)
+			subMenus = append(subMenus, menuService.AllSubMenusWithApplicationIdAndId(applicationId, menu.ID)...)
 		}
 	}
 	if isHasAllMenu {
@@ -54,7 +54,7 @@ func (s *AuthService) AuthMenusWithApplicationIdAndUserId(applicationId, userId 
 	menus = append(menus, parentMenus...)
 	menus = append(menus, subMenus...)
 	var idMaps = make(map[string]bool)
-	var m = make([]*model.Menus, len(idMaps))
+	var m = make([]*model.Menus, 0)
 	for _, menu := range menus {
 		if !idMaps[menu.ID] {
 			idMaps[menu.ID] = true
