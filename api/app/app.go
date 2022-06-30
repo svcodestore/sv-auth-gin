@@ -29,7 +29,9 @@ func GetCurrentApp(c *gin.Context) {
 		if data["redirectUris"] != nil {
 			redirectUris := strings.Split(data["redirectUris"].(string), "|")
 			if len(redirectUris) > 1 {
-				if !isIntranet {
+				if isIntranet {
+					data["redirectUris"] = redirectUris[0]
+				} else {
 					data["redirectUris"] = redirectUris[1]
 				}
 			}
@@ -37,7 +39,9 @@ func GetCurrentApp(c *gin.Context) {
 		if data["loginUris"] != nil {
 			loginUris := strings.Split(data["loginUris"].(string), "|")
 			if len(loginUris) > 1 {
-				if !isIntranet {
+				if isIntranet {
+					data["loginUris"] = loginUris[0]
+				} else {
 					data["loginUris"] = loginUris[1]
 				}
 			}
