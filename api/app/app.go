@@ -5,6 +5,8 @@ import (
 	"github.com/svcodestore/sv-auth-gin/global"
 	"github.com/svcodestore/sv-auth-gin/model/common/response"
 	"github.com/svcodestore/sv-auth-gin/service"
+	"strconv"
+	"strings"
 )
 
 var appService = service.ServiceGroup.AppService
@@ -17,6 +19,30 @@ func GetCurrentApp(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 	} else {
 		data["clientSecret"] = "***"
+
+		isIntranet := true
+		for _, s := range strings.Split(c.Request.Host, ".") {
+			_, e := strconv.Atoi(s)
+			isIntranet = isIntranet && e == nil
+		}
+
+		if data["redirectUris"] != nil {
+			redirectUris := strings.Split(data["redirectUris"].(string), "|")
+			if len(redirectUris) > 1 {
+				if !isIntranet {
+					data["redirectUris"] = redirectUris[1]
+				}
+			}
+		}
+		if data["loginUris"] != nil {
+			loginUris := strings.Split(data["loginUris"].(string), "|")
+			if len(loginUris) > 1 {
+				if !isIntranet {
+					data["loginUris"] = loginUris[1]
+				}
+			}
+		}
+
 		response.OkWithData(data, c)
 	}
 }
