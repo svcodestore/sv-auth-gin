@@ -21,9 +21,11 @@ func GetCurrentApp(c *gin.Context) {
 		data["clientSecret"] = "***"
 
 		isIntranet := true
-		for _, s := range strings.Split(c.Request.Host, ".") {
-			_, e := strconv.Atoi(s)
-			isIntranet = isIntranet && e == nil
+		if !strings.HasPrefix(c.Request.Host, "localhost") {
+			for _, s := range strings.Split(c.Request.Host, ".") {
+				_, e := strconv.Atoi(s)
+				isIntranet = isIntranet && e == nil
+			}
 		}
 
 		if data["redirectUris"] != nil {
